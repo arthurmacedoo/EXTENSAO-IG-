@@ -1,0 +1,209 @@
+/* ==========================================================================
+   Painel Flutuante IG Live Captura
+   ========================================================================== */
+
+#ig-live-capture-panel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 320px;
+  background: #1e1e24;
+  color: #f0f0f5;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  z-index: 9999999;
+  overflow: hidden;
+  user-select: none;
+  transition: width 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+}
+
+#ig-live-capture-panel * {
+  box-sizing: border-box;
+}
+
+/* Header */
+.ig-lc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #272730;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: grab;
+}
+
+.ig-lc-header:active {
+  cursor: grabbing;
+}
+
+.ig-lc-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.ig-lc-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ig-lc-ctx-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.ig-lc-ctx-live {
+  background: rgba(235, 47, 47, 0.2);
+  color: #ff5252;
+  border: 1px solid rgba(235, 47, 47, 0.4);
+}
+
+.ig-lc-ctx-normal {
+  background: rgba(255, 255, 255, 0.08);
+  color: #aaa;
+}
+
+.ig-lc-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.ig-lc-status.recording {
+  background: #00c853;
+  color: #000;
+}
+
+.ig-lc-status.paused {
+  background: #616161;
+  color: #eee;
+}
+
+.ig-lc-min-btn {
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.ig-lc-min-btn:hover {
+  color: #fff;
+}
+
+/* Body */
+.ig-lc-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#ig-live-capture-panel.minimized .ig-lc-body {
+  display: none;
+}
+
+/* Botão Liga / Desliga Principal */
+.ig-lc-btn-power {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ig-lc-btn-power.is-off {
+  background: #00c853;
+  color: #000;
+  box-shadow: 0 2px 8px rgba(0, 200, 83, 0.3);
+}
+
+.ig-lc-btn-power.is-off:hover {
+  background: #00e676;
+}
+
+.ig-lc-btn-power.is-on {
+  background: #d50000;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(213, 0, 0, 0.3);
+}
+
+.ig-lc-btn-power.is-on:hover {
+  background: #ff1744;
+}
+
+/* Contador e Preview */
+.ig-lc-counter {
+  font-weight: 600;
+  font-size: 12px;
+  color: #38ef7d;
+}
+
+.ig-lc-preview {
+  background: #141418;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 11px;
+  color: #bbb;
+  max-height: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Botões de Ação */
+.ig-lc-btnrow {
+  display: flex;
+  gap: 6px;
+}
+
+.ig-lc-btn {
+  flex: 1;
+  background: #33333e;
+  color: #f0f0f5;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+
+.ig-lc-btn:hover {
+  background: #444452;
+  color: #fff;
+}
+
+.ig-lc-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #aaa;
+}
+
+.ig-lc-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}

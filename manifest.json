@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "IG Live - Captura de Comentários",
+  "version": "1.1.0",
+  "description": "Captura comentários de lives do Instagram em tempo real com controle Liga/Desliga e exportação em CSV, HTML e JSON.",
+  "permissions": [
+    "storage",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://www.instagram.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "IG Live Captura"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.instagram.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

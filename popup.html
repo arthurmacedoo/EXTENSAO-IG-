@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>IG Live Captura</title>
+  <style>
+    body {
+      width: 260px;
+      margin: 0;
+      padding: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #18181b;
+      color: #fafafa;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 8px;
+      text-transform: uppercase;
+    }
+    .badge.recording { background: #00c853; color: #000; }
+    .badge.paused { background: #52525b; color: #fff; }
+    
+    .status-box {
+      background: #27272a;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .count {
+      font-size: 20px;
+      font-weight: 700;
+      color: #38ef7d;
+    }
+    .count-label {
+      font-size: 11px;
+      color: #a1a1aa;
+    }
+    
+    .btn-power {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .btn-power.is-off {
+      background: #00c853;
+      color: #000;
+    }
+    .btn-power.is-on {
+      background: #ef4444;
+      color: #fff;
+    }
+    
+    .btn-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .btn {
+      flex: 1;
+      padding: 6px 4px;
+      background: #3f3f46;
+      border: 1px solid #52525b;
+      border-radius: 4px;
+      color: #f4f4f5;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { background: #52525b; }
+    .info {
+      font-size: 10px;
+      color: #71717a;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h3>IG Live Captura</h3>
+    <span id="badge" class="badge paused">DESLIGADO</span>
+  </div>
+
+  <div class="status-box">
+    <div id="comment-count" class="count">0</div>
+    <div class="count-label">comentários capturados</div>
+  </div>
+
+  <button id="btn-toggle" class="btn-power is-off">▶ LIGAR CAPTURA</button>
+
+  <div class="btn-row">
+    <button id="btn-csv" class="btn">⬇ CSV</button>
+    <button id="btn-reset" class="btn">🗑 Limpar</button>
+  </div>
+
+  <div class="info">Abra a Live do Instagram e ligue para capturar.</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

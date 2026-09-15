@@ -511,6 +511,21 @@
   table { width:100%; border-collapse: collapse; }
   th, td { text-align:left; padding:12px 16px; border-bottom:1px solid #edf0f2; font-size:13px; vertical-align:middle; }
   th { background:#f8fafc; font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700; letter-spacing:0.5px; }
+  
+  .th-user-filter, .th-comment-filter { display:flex; align-items:center; gap:8px; }
+  .th-label { font-size:11px; font-weight:800; color:#475569; letter-spacing:0.5px; white-space:nowrap; }
+  .th-select {
+    flex:1; min-width:160px; padding:6px 10px; font-size:12px; font-weight:700;
+    color:#0369a1; background:#f0f9ff; border:1.5px solid #0284c7; border-radius:6px;
+    outline:none; cursor:pointer;
+  }
+  .th-select:focus { box-shadow:0 0 0 3px rgba(2,132,199,0.25); }
+  .th-input {
+    flex:1; max-width:300px; padding:6px 10px; font-size:12px; color:#1e293b;
+    background:#fff; border:1px solid #cbd5e1; border-radius:6px; outline:none;
+  }
+  .th-input:focus { border-color:#0284c7; }
+
   mark { background:#ffe58f; padding:2px 4px; border-radius:3px; font-weight:600; }
   .badge-rest { background:#e0f2fe; color:#0369a1; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; }
   .badge-dom { background:#f3e8ff; color:#7e22ce; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; }
@@ -574,7 +589,27 @@
 
     <div class="table-card">
       <table>
-        <thead><tr><th>Horário</th><th>Usuário (@)</th><th>Comentário</th><th>Origem</th></tr></thead>
+        <thead>
+          <tr>
+            <th style="width: 100px;">HORÁRIO</th>
+            <th style="width: 280px;">
+              <div class="th-user-filter">
+                <span class="th-label">USUÁRIO</span>
+                <select id="thUserSelect" class="th-select" title="Filtrar por usuário específico">
+                  <option value="">👤 Filtrar Usuário (${uniqueUsers.size}) ▼</option>
+                  ${userOptions}
+                </select>
+              </div>
+            </th>
+            <th>
+              <div class="th-comment-filter">
+                <span class="th-label">COMENTÁRIO</span>
+                <input type="text" id="thCommentInput" class="th-input" placeholder="🔍 Filtrar palavra..." autocomplete="off" />
+              </div>
+            </th>
+            <th style="width: 90px;">ORIGEM</th>
+          </tr>
+        </thead>
         <tbody id="commentsBody">${rows}</tbody>
       </table>
     </div>
@@ -591,6 +626,8 @@
       const searchInput = document.getElementById("searchInput");
       const btnClearSearch = document.getElementById("btnClearSearch");
       const userSelect = document.getElementById("userSelect");
+      const thUserSelect = document.getElementById("thUserSelect");
+      const thCommentInput = document.getElementById("thCommentInput");
       const btnResetFilters = document.getElementById("btnResetFilters");
       const btnCopyBuyers = document.getElementById("btnCopyBuyers");
       const shownCount = document.getElementById("shownCount");
@@ -644,12 +681,23 @@
 
       searchInput.addEventListener("input", (e) => {
         searchQuery = e.target.value;
+        if (thCommentInput) thCommentInput.value = searchQuery;
         btnClearSearch.style.display = searchQuery ? "block" : "none";
         applyFilters();
       });
 
+      if (thCommentInput) {
+        thCommentInput.addEventListener("input", (e) => {
+          searchQuery = e.target.value;
+          searchInput.value = searchQuery;
+          btnClearSearch.style.display = searchQuery ? "block" : "none";
+          applyFilters();
+        });
+      }
+
       btnClearSearch.addEventListener("click", () => {
         searchInput.value = "";
+        if (thCommentInput) thCommentInput.value = "";
         searchQuery = "";
         btnClearSearch.style.display = "none";
         applyFilters();
@@ -657,14 +705,24 @@
 
       userSelect.addEventListener("change", (e) => {
         activeUser = e.target.value;
+        if (thUserSelect) thUserSelect.value = activeUser;
         applyFilters();
       });
+
+      if (thUserSelect) {
+        thUserSelect.addEventListener("change", (e) => {
+          activeUser = e.target.value;
+          userSelect.value = activeUser;
+          applyFilters();
+        });
+      }
 
       window.filterByUser = function (user) {
         activeUser = user;
         userSelect.value = user;
+        if (thUserSelect) thUserSelect.value = user;
         applyFilters();
-        window.scrollTo({ top: document.querySelector(".controls-card").offsetTop - 20, behavior: "smooth" });
+        thUserSelect.scrollIntoView({ behavior: "smooth", block: "center" });
       };
 
       kwCards.forEach((card) => {
@@ -687,8 +745,10 @@
         activeUser = "";
         searchQuery = "";
         searchInput.value = "";
+        if (thCommentInput) thCommentInput.value = "";
         btnClearSearch.style.display = "none";
         userSelect.value = "";
+        if (thUserSelect) thUserSelect.value = "";
         kwCards.forEach((c) => c.classList.remove("active"));
         applyFilters();
       });

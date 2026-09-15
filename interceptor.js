@@ -16,8 +16,9 @@
 
   function extractComments(data) {
     if (!data) return [];
-    if (Array.isArray(data.comments) || Array.isArray(data.system_comments)) {
-      return (data.comments || []).concat(data.system_comments || []);
+    // Não incluir system_comments (ex: "fulano entrou na live"), apenas comentários de usuários
+    if (Array.isArray(data.comments)) {
+      return data.comments;
     }
     if (data.data) {
       if (Array.isArray(data.data.comments)) return data.data.comments;
@@ -36,7 +37,8 @@
     return (
       url.includes("/get_comment/") ||
       (url.includes("/live/") && url.includes("comment")) ||
-      (url.includes("/api/v1/live/") && url.includes("/comment/"))
+      (url.includes("/api/v1/live/") && url.includes("/comment/")) ||
+      url.includes("live_comment")
     );
   }
 

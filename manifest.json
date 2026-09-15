@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "IG Live - Captura Profissional de Comentários",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Captura ultra-robusta de comentários para Live Commerce com arquitetura híbrida (REST + DOM), persistência IndexedDB e proteção anti-perda.",
   "icons": {
     "16": "icon16.png",
@@ -11,7 +11,8 @@
   "permissions": [
     "storage",
     "unlimitedStorage",
-    "downloads"
+    "downloads",
+    "activeTab"
   ],
   "host_permissions": [
     "*://*.instagram.com/*",

@@ -146,6 +146,45 @@
   // 3. Scanner Complementar de DOM (Fallback caso REST oscile)
   // ----------------------------------------------------------------
 
+  const SYSTEM_PHRASES = [
+    "também está assistindo", "começou a assistir", "entrou na live",
+    "entrou na transmissão", "is also watching", "started watching",
+    "joined the live", "joined"
+  ];
+
+  function isSystemNotice(text) {
+    if (!text) return false;
+    const lower = text.toLowerCase();
+    return SYSTEM_PHRASES.some((phrase) => lower.includes(phrase));
+  }
+
+  function extractUsernameFromHref(href) {
+    if (!href) return null;
+    try {
+      const url = new URL(href, location.origin);
+      const isAllowedHost =
+        /(^|\.)instagram\.com$/.test(url.hostname) ||
+        url.hostname === "localhost" ||
+        url.hostname === "127.0.0.1";
+      if (!isAllowedHost) return null;
+
+      const match = url.pathname.match(/^\/([a-zA-Z0-9._]+)\/?$/);
+      if (!match) return null;
+
+      const user = match[1].toLowerCase();
+      const IGNORED = new Set([
+        "explore", "reels", "stories", "direct", "accounts", "legal", "about",
+        "developer", "api", "emails", "challenge", "disclaimer", "directory",
+        "session", "tv", "p", "ads", "privacy", "terms", "safety", "creators",
+        "business", "help", "settings", "loginhelp", "accountscenter", "live"
+      ]);
+      if (IGNORED.has(user)) return null;
+      return user;
+    } catch (e) {
+      return null;
+    }
+  }
+
   function extractUserFromAlt(alt) {
     if (!alt || typeof alt !== "string") return null;
     const s = alt.trim().replace(/\.$/, "");
@@ -162,77 +201,92 @@
     return null;
   }
 
-  function scanDomForComments() {
-    if (state.status !== "recording") return;
-
-    // 1. Busca nós ou botões "Responder"
-    const leaves = document.querySelectorAll('button, [role="button"], span, div');
-    const responderEls = [];
-    for (let i = 0; i < leaves.length; i++) {
-      const el = leaves[i];
-      if (el.children.length > 0) continue;
-      const t = (el.textContent || "").trim().toLowerCase();
-      if (t === "responder" || t === "reply") {
-        responderEls.push(el);
+  function getCleanNodeText(node) {
+    const clone = node.cloneNode(true);
+    clone.querySelectorAll("button, [role='button'], svg").forEach((b) => b.remove());
+    clone.querySelectorAll("*").forEach((el) => {
+      if (el.children.length === 0) {
+        const t = (el.textContent || "").trim().toLowerCase();
+        if (ACTION_WORDS.has(t)) el.remove();
       }
-    }
-
-    for (const respEl of responderEls) {
-      let row = respEl.parentElement;
-      for (let depth = 0; depth < 5 && row && row !== document.body; depth++) {
-        if (row.id === "ig-live-capture-panel") break;
-        const fullText = (row.innerText || row.textContent || "").trim();
-        if (fullText.length > 5 && fullText.length < 600) {
-          const nested = row.querySelectorAll('button, [role="button"], span, div');
-          let respCount = 0;
-          for (let k = 0; k < nested.length; k++) {
-            if (nested[k].children.length === 0) {
-              const ct = (nested[k].textContent || "").trim().toLowerCase();
-              if (ct === "responder" || ct === "reply") respCount++;
-            }
-          }
-          if (respCount === 1) {
-            processDomRow(row);
-            break;
-          }
-        }
-        row = row.parentElement;
-      }
-    }
-
-    // 2. Fallback: busca por avatares de perfil com alt (comentários sem botão responder, fixados, etc.)
-    const imgs = document.querySelectorAll('img[alt*="perfil" i], img[alt*="profile" i]');
-    for (const img of imgs) {
-      if (img.closest && img.closest("#ig-live-capture-panel")) continue;
-      const user = extractUserFromAlt(img.getAttribute("alt"));
-      if (!user) continue;
-
-      let row = img.parentElement;
-      for (let depth = 0; depth < 5 && row && row !== document.body; depth++) {
-        if (row.id === "ig-live-capture-panel") break;
-        const fullText = (row.innerText || row.textContent || "").trim();
-        if (fullText.length > 3 && fullText.length < 500) {
-          if (!row.closest('header, nav, [role="banner"], [role="navigation"]')) {
-            processDomRow(row, user);
-            break;
-          }
-        }
-        row = row.parentElement;
-      }
-    }
+    });
+    return (clone.innerText || clone.textContent || "").replace(/\s+/g, " ").trim();
   }
 
-  async function processDomRow(row, fallbackUser = null) {
-    if (!row) return;
-    if (row.dataset && row.dataset.igCaptured === "true") return;
-    if (row.closest && row.closest("[data-ig-captured='true']")) return;
-    row.dataset.igCaptured = "true";
+  function findBestCommentContainer(respEl) {
+    let curr = respEl.parentElement;
+    let bestCandidate = null;
 
-    let username = fallbackUser || null;
+    for (let depth = 0; depth < 6 && curr && curr !== document.body; depth++) {
+      if (curr.id === "ig-live-capture-panel") break;
+
+      const leaves = curr.querySelectorAll("button, [role='button'], span, div");
+      let responderCount = 0;
+      for (let i = 0; i < leaves.length; i++) {
+        if (leaves[i].children.length === 0) {
+          const t = (leaves[i].textContent || "").trim().toLowerCase();
+          if (t === "responder" || t === "reply") responderCount++;
+        }
+      }
+      if (responderCount > 1) break;
+
+      const cleanText = getCleanNodeText(curr);
+      if (cleanText.length > 0 && cleanText.length < 500) {
+        bestCandidate = curr;
+        const img = curr.querySelector("img");
+        if (img && extractUserFromAlt(img.getAttribute("alt"))) {
+          return curr;
+        }
+        const a = curr.querySelector("a[href]");
+        if (a && extractUsernameFromHref(a.getAttribute("href"))) {
+          return curr;
+        }
+      }
+      curr = curr.parentElement;
+    }
+    return bestCandidate;
+  }
+
+  function extractCommentFromContainer(row) {
+    if (!row) return null;
+    if (row.dataset && row.dataset.igCaptured === "true") return null;
+    if (row.closest && row.closest("[data-ig-captured='true']")) return null;
+
+    let username = null;
+
+    // A) Imagem de avatar com alt
+    const imgs = row.querySelectorAll("img");
+    for (const img of imgs) {
+      const u = extractUserFromAlt(img.getAttribute("alt"));
+      if (u) {
+        username = u;
+        break;
+      }
+    }
+
+    // B) Link para perfil
     if (!username) {
-      const img = row.querySelector("img");
-      if (img && img.alt) {
-        username = extractUserFromAlt(img.alt);
+      const anchors = row.querySelectorAll("a[href]");
+      for (const a of anchors) {
+        const u = extractUsernameFromHref(a.getAttribute("href"));
+        if (u) {
+          username = u;
+          break;
+        }
+      }
+    }
+
+    // C) Elemento de autor (span, div, bold)
+    if (!username) {
+      const candidates = row.querySelectorAll("span, div, [role='link'], b, strong");
+      for (const el of candidates) {
+        if (el.children.length === 0) {
+          const t = (el.textContent || "").trim().replace(/^@/, "");
+          if (/^[a-zA-Z0-9._]{2,35}$/.test(t) && !ACTION_WORDS.has(t.toLowerCase())) {
+            username = t;
+            break;
+          }
+        }
       }
     }
 
@@ -245,7 +299,7 @@
         i.remove();
       }
     });
-    clone.querySelectorAll('button, [role="button"], svg').forEach((b) => b.remove());
+    clone.querySelectorAll("button, [role='button'], svg").forEach((b) => b.remove());
     clone.querySelectorAll("*").forEach((el) => {
       if (el.children.length === 0) {
         const t = (el.textContent || "").trim().toLowerCase();
@@ -254,7 +308,7 @@
     });
 
     let rawText = (clone.innerText || clone.textContent || "").replace(/\s+/g, " ").trim();
-    if (!rawText) return;
+    if (!rawText) return null;
 
     let commentText = "";
     if (username) {
@@ -263,19 +317,86 @@
     } else {
       const parts = rawText.split(/\s+/);
       if (parts.length >= 2) {
-        username = parts[0].replace(/^@/, "").replace(/[:]$/, "").trim();
-        commentText = parts.slice(1).join(" ").trim();
+        const possibleUser = parts[0].replace(/^@/, "").replace(/[:]$/, "").trim();
+        if (/^[a-zA-Z0-9._]{2,35}$/.test(possibleUser) && !ACTION_WORDS.has(possibleUser.toLowerCase())) {
+          username = possibleUser;
+          commentText = parts.slice(1).join(" ").trim();
+        }
       }
     }
 
-    if (!username || !commentText) return;
+    if (!username || !commentText) return null;
+
     for (const act of ACTION_WORDS) {
       const actRegex = new RegExp("\\s*" + act + "$", "i");
       commentText = commentText.replace(actRegex, "").trim();
     }
-    if (!commentText) return;
+    if (!commentText) return null;
 
-    // Se o REST já capturou este exato comentário deste mesmo autor há menos de 3.5s, ignora para não duplicar
+    if (isSystemNotice(commentText) || isSystemNotice(rawText)) {
+      return null;
+    }
+
+    return { username: "@" + username.replace(/^@/, ""), commentText, row };
+  }
+
+  function scanDomForComments() {
+    if (state.status !== "recording") return;
+
+    // 1. Busca botões "Responder" / "Reply"
+    const leaves = document.querySelectorAll("button, [role='button'], span, div");
+    for (let i = 0; i < leaves.length; i++) {
+      const el = leaves[i];
+      if (el.children.length > 0) continue;
+      const t = (el.textContent || "").trim().toLowerCase();
+      if (t === "responder" || t === "reply") {
+        const container = findBestCommentContainer(el);
+        if (container) {
+          processExtractedComment(extractCommentFromContainer(container));
+        }
+      }
+    }
+
+    // 2. Busca por imagens de avatar (para comentários sem botão responder ou fixados)
+    const imgs = document.querySelectorAll('img[alt*="perfil" i], img[alt*="profile" i]');
+    for (const img of imgs) {
+      if (img.closest && img.closest("#ig-live-capture-panel")) continue;
+      let curr = img.parentElement;
+      for (let depth = 0; depth < 5 && curr && curr !== document.body; depth++) {
+        if (curr.id === "ig-live-capture-panel") break;
+        const info = extractCommentFromContainer(curr);
+        if (info) {
+          processExtractedComment(info);
+          break;
+        }
+        curr = curr.parentElement;
+      }
+    }
+
+    // 3. Busca por links diretos de usuário
+    const anchors = document.querySelectorAll("a[href]");
+    for (const a of anchors) {
+      if (a.closest && a.closest("#ig-live-capture-panel")) continue;
+      if (!extractUsernameFromHref(a.getAttribute("href"))) continue;
+      let curr = a.parentElement;
+      for (let depth = 0; depth < 4 && curr && curr !== document.body; depth++) {
+        if (curr.id === "ig-live-capture-panel") break;
+        const info = extractCommentFromContainer(curr);
+        if (info) {
+          processExtractedComment(info);
+          break;
+        }
+        curr = curr.parentElement;
+      }
+    }
+  }
+
+  async function processExtractedComment(info) {
+    if (!info) return;
+    const { username, commentText, row } = info;
+
+    row.dataset.igCaptured = "true";
+
     if (isRecentlyCaptured(username, commentText, 3500)) return;
     recordRecentComment(username, commentText);
 
@@ -284,7 +405,7 @@
       id: `${state.currentSession?.id || "default"}_dom_${now.getTime()}_${Math.random().toString(36).slice(2, 6)}`,
       sessionId: state.currentSession?.id || "default",
       pk: null,
-      user: "@" + username.replace(/^@/, ""),
+      user: username,
       comment: commentText,
       captured_time: now.toLocaleTimeString("pt-BR", { hour12: false }),
       captured_at: now.toISOString(),
@@ -1061,7 +1182,17 @@
       btnMin.textContent = panel.classList.contains("minimized") ? "+" : "—";
     });
 
-    headerRight.append(liveContextBadge, statusBadge, btnMin);
+    const btnClose = document.createElement("button");
+    btnClose.type = "button";
+    btnClose.className = "ig-lc-close-btn";
+    btnClose.title = "Fechar painel na tela";
+    btnClose.textContent = "✕";
+    btnClose.addEventListener("click", (e) => {
+      e.stopPropagation();
+      hidePanel();
+    });
+
+    headerRight.append(liveContextBadge, statusBadge, btnMin, btnClose);
     header.append(title, headerRight);
 
     const body = document.createElement("div");
@@ -1133,6 +1264,34 @@
     panelEls.preview = preview;
   }
 
+  function showPanel() {
+    if (!panelEls.panel) buildPanel();
+    if (panelEls.panel) {
+      panelEls.panel.style.display = "block";
+    }
+  }
+
+  function hidePanel() {
+    if (panelEls.panel) {
+      panelEls.panel.style.display = "none";
+    }
+  }
+
+  function togglePanel() {
+    if (!panelEls.panel) {
+      buildPanel();
+      showPanel();
+      return true;
+    }
+    if (panelEls.panel.style.display === "none") {
+      showPanel();
+      return true;
+    } else {
+      hidePanel();
+      return false;
+    }
+  }
+
   // ----------------------------------------------------------------
   // 8. Mensagens do Popup (Barra do Chrome)
   // ----------------------------------------------------------------
@@ -1144,7 +1303,17 @@
           status: state.status,
           totalComments: state.comments.length,
           isLive: checkLiveContext(),
+          panelVisible: panelEls.panel ? panelEls.panel.style.display !== "none" : false,
         });
+      } else if (req.type === "TOGGLE_PANEL") {
+        const isVis = togglePanel();
+        sendResponse({ panelVisible: isVis });
+      } else if (req.type === "SHOW_PANEL") {
+        showPanel();
+        sendResponse({ panelVisible: true });
+      } else if (req.type === "HIDE_PANEL") {
+        hidePanel();
+        sendResponse({ panelVisible: false });
       } else if (req.type === "TOGGLE_POWER") {
         onTogglePower();
         sendResponse({
@@ -1156,8 +1325,18 @@
           sendDownload(buildCSV(state.comments), "text/csv;charset=utf-8", `ig_live_${Date.now()}.csv`);
         }
         sendResponse({ ok: true });
+      } else if (req.type === "DOWNLOAD_HTML") {
+        if (state.comments.length > 0) {
+          sendDownload(buildHTMLReport(state.comments, state.currentSession?.title), "text/html;charset=utf-8", `relatorio_live_${Date.now()}.html`);
+        }
+        sendResponse({ ok: true });
       } else if (req.type === "RESET") {
         onNewSession();
+        sendResponse({ ok: true });
+      } else if (req.type === "SET_AUTO_OPEN_IG") {
+        if (req.value) {
+          showPanel();
+        }
         sendResponse({ ok: true });
       }
       return true;
@@ -1174,6 +1353,19 @@
     buildPanel();
     updateStatusBadge();
     updateCounterAndPreview();
+
+    // Por padrão o painel flutuante fica OCULTO, a menos que a preferência autoOpenOnInstagram esteja ativa
+    if (typeof chrome !== "undefined" && chrome.storage?.local) {
+      chrome.storage.local.get(["autoOpenOnInstagram"], (res) => {
+        if (res && res.autoOpenOnInstagram === true) {
+          showPanel();
+        } else {
+          hidePanel();
+        }
+      });
+    } else {
+      hidePanel();
+    }
 
     setInterval(updateStatusBadge, 2000);
   }

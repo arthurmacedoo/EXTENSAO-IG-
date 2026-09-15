@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <title>IG Live Captura</title>
   <style>
+    * { box-sizing: border-box; }
     body {
-      width: 260px;
+      width: 290px;
       margin: 0;
       padding: 14px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -22,11 +23,12 @@
       margin: 0;
       font-size: 14px;
       font-weight: 700;
+      letter-spacing: 0.2px;
     }
     .badge {
       font-size: 10px;
       font-weight: 700;
-      padding: 2px 6px;
+      padding: 2px 7px;
       border-radius: 8px;
       text-transform: uppercase;
     }
@@ -37,13 +39,27 @@
       background: #27272a;
       border-radius: 8px;
       padding: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       text-align: center;
+      border: 1px solid #3f3f46;
     }
-    .count {
-      font-size: 20px;
+    .ctx-badge {
+      display: inline-block;
+      font-size: 10px;
       font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .ctx-live { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .ctx-normal { background: rgba(255, 255, 255, 0.08); color: #a1a1aa; }
+
+    .count {
+      font-size: 24px;
+      font-weight: 800;
       color: #38ef7d;
+      line-height: 1.2;
     }
     .count-label {
       font-size: 11px;
@@ -65,19 +81,43 @@
       background: #00c853;
       color: #000;
     }
+    .btn-power.is-off:hover { background: #00e676; }
     .btn-power.is-on {
       background: #ef4444;
       color: #fff;
     }
+    .btn-power.is-on:hover { background: #dc2626; }
+
+    .btn-panel-toggle {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-panel-toggle:hover { background: #1d4ed8; }
+    .btn-panel-toggle.is-hidden { background: #3f3f46; border: 1px solid #52525b; }
+    .btn-panel-toggle.is-hidden:hover { background: #52525b; }
     
     .btn-row {
       display: flex;
       gap: 6px;
-      margin-top: 6px;
+      margin-top: 4px;
+      margin-bottom: 10px;
     }
     .btn {
       flex: 1;
-      padding: 6px 4px;
+      padding: 7px 4px;
       background: #3f3f46;
       border: 1px solid #52525b;
       border-radius: 4px;
@@ -85,13 +125,52 @@
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
+      text-align: center;
+      transition: background 0.15s;
     }
     .btn:hover { background: #52525b; }
+
+    /* Opções / Configurações */
+    .settings-box {
+      background: #202024;
+      border: 1px solid #333338;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-top: 8px;
+    }
+    .settings-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #71717a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .settings-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    .settings-item:last-child { margin-bottom: 0; }
+    .settings-item input[type="checkbox"] {
+      margin-top: 2px;
+      cursor: pointer;
+      accent-color: #00c853;
+    }
+    .settings-label {
+      font-size: 11px;
+      line-height: 1.3;
+      color: #d4d4d8;
+      user-select: none;
+    }
     .info {
       font-size: 10px;
       color: #71717a;
-      margin-top: 10px;
+      margin-top: 8px;
       text-align: center;
+      line-height: 1.3;
     }
   </style>
 </head>
@@ -102,18 +181,33 @@
   </div>
 
   <div class="status-box">
+    <div id="ctx-badge" class="ctx-badge ctx-normal">⚪ Verificando Live...</div>
     <div id="comment-count" class="count">0</div>
     <div class="count-label">comentários capturados</div>
   </div>
 
   <button id="btn-toggle" class="btn-power is-off">▶ LIGAR CAPTURA</button>
+  <button id="btn-panel-toggle" class="btn-panel-toggle">👁️ Abrir Painel na Tela</button>
 
   <div class="btn-row">
     <button id="btn-csv" class="btn">⬇ CSV</button>
+    <button id="btn-html" class="btn">⬇ Relatório</button>
     <button id="btn-reset" class="btn">🗑 Limpar</button>
   </div>
 
-  <div class="info">Abra a Live do Instagram e ligue para capturar.</div>
+  <div class="settings-box">
+    <div class="settings-title">Preferências do Painel Flutuante</div>
+    <label class="settings-item">
+      <input type="checkbox" id="chk-auto-open-click" checked>
+      <span class="settings-label">Abrir painel na tela ao clicar na extensão</span>
+    </label>
+    <label class="settings-item">
+      <input type="checkbox" id="chk-auto-open-ig">
+      <span class="settings-label">Abrir painel automaticamente ao entrar no Instagram</span>
+    </label>
+  </div>
+
+  <div class="info">Dica: Você pode fechar o painel na tela pelo botão ✕ sem parar a captura.</div>
 
   <script src="popup.js"></script>
 </body>

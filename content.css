@@ -104,6 +104,24 @@
   color: #fff;
 }
 
+.ig-lc-close-btn {
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 5px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.ig-lc-close-btn:hover {
+  color: #ff5252;
+  background: rgba(255, 82, 82, 0.2);
+}
+
 /* Body */
 .ig-lc-body {
   padding: 12px 14px;

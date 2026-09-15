@@ -375,12 +375,30 @@
     const uniqueUsers = new Set(comments.map((c) => c.user));
     const keywordCounts = {};
     PURCHASE_KEYWORDS.forEach((k) => (keywordCounts[k] = 0));
+
+    const userCounts = {};
+    const buyerUsers = new Set();
+
     comments.forEach((c) => {
+      const u = c.user || "";
+      userCounts[u] = (userCounts[u] || 0) + 1;
       const lower = (c.comment || "").toLowerCase();
+      let hasPurchase = false;
       PURCHASE_KEYWORDS.forEach((k) => {
-        if (lower.includes(k)) keywordCounts[k]++;
+        if (lower.includes(k)) {
+          keywordCounts[k]++;
+          hasPurchase = true;
+        }
       });
+      if (hasPurchase && u) {
+        buyerUsers.add(u);
+      }
     });
+
+    const sortedUsers = Object.keys(userCounts).sort((a, b) => userCounts[b] - userCounts[a]);
+    const userOptions = sortedUsers
+      .map((u) => `<option value="${escapeHtml(u)}">${escapeHtml(u)} (${userCounts[u]})</option>`)
+      .join("");
 
     function escapeHtml(str) {
       return String(str || "")
@@ -403,68 +421,297 @@
     const rows = comments
       .map(
         (c) => `
-      <tr>
-        <td>${escapeHtml(c.captured_time)}</td>
-        <td><strong>${escapeHtml(c.user)}</strong></td>
-        <td>${highlight(c.comment)}</td>
-        <td><span class="badge-${c.source === "REST" ? "rest" : "dom"}">${c.source || "REST"}</span></td>
+      <tr data-user="${escapeHtml((c.user || "").toLowerCase())}" data-comment="${escapeHtml((c.comment || "").toLowerCase())}">
+        <td class="col-time">${escapeHtml(c.captured_time)}</td>
+        <td class="col-user">
+          <button type="button" class="user-pill" title="Filtrar comentários deste cliente" onclick="filterByUser('${escapeHtml(c.user)}')">
+            ${escapeHtml(c.user)}
+          </button>
+        </td>
+        <td class="col-comment">${highlight(c.comment)}</td>
+        <td class="col-source"><span class="badge-${c.source === "REST" ? "rest" : "dom"}">${c.source || "REST"}</span></td>
       </tr>`
       )
       .join("");
 
     const keywordCards = PURCHASE_KEYWORDS.map(
       (k) => `
-      <div class="kw-card">
+      <button type="button" class="kw-card" data-kw="${escapeHtml(k)}" title="Clique para filtrar apenas comentários com '${escapeHtml(k)}'">
         <div class="kw-count">${keywordCounts[k]}</div>
         <div class="kw-label">${escapeHtml(k)}</div>
-      </div>`
+      </button>`
     ).join("");
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(sessionTitle || "Relatório de Comentários")}</title>
 <style>
+  * { box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:#f4f6f8; margin:0; padding:28px; color:#1a1a1a; }
-  h1 { font-size: 22px; margin-bottom: 4px; color:#111; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 24px; margin: 0 0 6px 0; color:#111; display:flex; align-items:center; gap:8px; }
   .meta { color:#666; font-size:13px; margin-bottom:20px; }
   .summary { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
-  .summary-card { background:#fff; border-radius:10px; padding:14px 20px; box-shadow:0 2px 4px rgba(0,0,0,.06); min-width:130px; border:1px solid #e1e4e8; }
-  .summary-card .n { font-size:24px; font-weight:700; color:#0066cc; }
-  .summary-card .l { font-size:12px; color:#666; text-transform:uppercase; margin-top:2px; }
+  .summary-card { background:#fff; border-radius:12px; padding:14px 20px; box-shadow:0 2px 5px rgba(0,0,0,.05); min-width:140px; border:1px solid #e1e4e8; }
+  .summary-card .n { font-size:26px; font-weight:700; color:#0066cc; }
+  .summary-card .l { font-size:12px; color:#666; text-transform:uppercase; margin-top:2px; font-weight:600; }
+  
   .kw-section { margin-bottom:24px; }
+  .kw-title { font-size:13px; font-weight:700; color:#444; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
   .kw-grid { display:flex; gap:10px; flex-wrap:wrap; }
-  .kw-card { background:#fff8e6; border:1px solid #ffe082; border-radius:8px; padding:8px 16px; text-align:center; min-width:80px; }
-  .kw-count { font-size:18px; font-weight:700; color:#b78103; }
-  .kw-label { font-size:11px; color:#795548; text-transform:uppercase; font-weight:600; }
-  table { width:100%; border-collapse: collapse; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 2px 4px rgba(0,0,0,.06); border:1px solid #e1e4e8; }
-  th, td { text-align:left; padding:10px 14px; border-bottom:1px solid #edf0f2; font-size:13px; vertical-align:middle; }
-  th { background:#fafbfc; font-size:12px; text-transform:uppercase; color:#586069; font-weight:600; }
-  mark { background:#ffe58f; padding:1px 4px; border-radius:3px; }
-  .badge-rest { background:#e3f2fd; color:#0d47a1; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; }
-  .badge-dom { background:#f3e5f5; color:#4a148c; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; }
-  tr:hover td { background:#fbfcfe; }
+  .kw-card {
+    background:#fff8e6; border:2px solid #ffe082; border-radius:10px; padding:10px 18px;
+    text-align:center; min-width:90px; cursor:pointer; transition:all 0.15s ease;
+    user-select:none; outline:none;
+  }
+  .kw-card:hover { transform:translateY(-2px); border-color:#f59e0b; box-shadow:0 4px 8px rgba(245,158,11,.15); }
+  .kw-card.active { background:#fef3c7; border-color:#d97706; box-shadow:0 0 0 3px rgba(217,119,6,.25); }
+  .kw-card .kw-count { font-size:20px; font-weight:800; color:#b78103; }
+  .kw-card .kw-label { font-size:11px; color:#795548; text-transform:uppercase; font-weight:700; margin-top:2px; }
+
+  /* Toolbar de Filtros */
+  .controls-card { background:#fff; border-radius:12px; padding:16px 20px; box-shadow:0 2px 5px rgba(0,0,0,.05); border:1px solid #e1e4e8; margin-bottom:20px; }
+  .controls-row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .search-wrap { flex:1; min-width:280px; position:relative; }
+  .search-wrap input {
+    width:100%; padding:10px 36px 10px 14px; border:1px solid #cbd5e1; border-radius:8px;
+    font-size:14px; outline:none; transition:border 0.2s;
+  }
+  .search-wrap input:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
+  .btn-clear {
+    position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none;
+    border:none; color:#94a3b8; font-size:14px; cursor:pointer; display:none; padding:4px;
+  }
+  .btn-clear:hover { color:#475569; }
+
+  .select-wrap { min-width:220px; }
+  .select-wrap select {
+    width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px;
+    font-size:13px; outline:none; background:#fff; cursor:pointer;
+  }
+  .select-wrap select:focus { border-color:#2563eb; }
+
+  .btn-action {
+    padding:10px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;
+    border:none; transition:all 0.15s ease; display:flex; align-items:center; gap:6px;
+  }
+  .btn-copy { background:#059669; color:#fff; }
+  .btn-copy:hover { background:#047857; }
+  .btn-reset { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }
+  .btn-reset:hover { background:#e2e8f0; color:#1e293b; }
+
+  .filter-status { margin-top:12px; font-size:12px; color:#64748b; display:flex; justify-content:space-between; align-items:center; }
+  .filter-badge { background:#eff6ff; color:#1d4ed8; font-weight:600; padding:3px 8px; border-radius:6px; border:1px solid #bfdbfe; font-size:11px; }
+
+  /* Tabela */
+  .table-card { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,.05); border:1px solid #e1e4e8; }
+  table { width:100%; border-collapse: collapse; }
+  th, td { text-align:left; padding:12px 16px; border-bottom:1px solid #edf0f2; font-size:13px; vertical-align:middle; }
+  th { background:#f8fafc; font-size:11px; text-transform:uppercase; color:#64748b; font-weight:700; letter-spacing:0.5px; }
+  mark { background:#ffe58f; padding:2px 4px; border-radius:3px; font-weight:600; }
+  .badge-rest { background:#e0f2fe; color:#0369a1; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; }
+  .badge-dom { background:#f3e8ff; color:#7e22ce; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; }
+  tr:hover td { background:#f8fafc; }
+
+  .user-pill {
+    background:none; border:none; padding:4px 8px; border-radius:6px; font-size:13px;
+    font-weight:700; color:#0284c7; cursor:pointer; text-align:left; transition:all 0.15s ease;
+  }
+  .user-pill:hover { background:#e0f2fe; color:#0369a1; text-decoration:underline; }
+
+  .toast {
+    position:fixed; bottom:24px; right:24px; background:#1e293b; color:#fff;
+    padding:12px 20px; border-radius:8px; font-size:13px; font-weight:600;
+    box-shadow:0 4px 12px rgba(0,0,0,.2); opacity:0; transition:opacity 0.2s;
+    pointer-events:none; z-index:9999;
+  }
+  .toast.show { opacity:1; }
 </style>
 </head>
 <body>
-  <h1>${escapeHtml(sessionTitle || "Relatório de Comentários")}</h1>
-  <div class="meta">Gerado em ${new Date().toLocaleString("pt-BR")} · ${total} comentários · ${uniqueUsers.size} clientes únicos</div>
+  <div class="container">
+    <h1>⚡ ${escapeHtml(sessionTitle || "Relatório de Comentários")}</h1>
+    <div class="meta">Gerado em ${new Date().toLocaleString("pt-BR")} · ${total} comentários capturados · ${uniqueUsers.size} clientes únicos</div>
 
-  <div class="summary">
-    <div class="summary-card"><div class="n">${total}</div><div class="l">Comentários</div></div>
-    <div class="summary-card"><div class="n">${uniqueUsers.size}</div><div class="l">Clientes únicos</div></div>
+    <div class="summary">
+      <div class="summary-card"><div class="n">${total}</div><div class="l">Total de Comentários</div></div>
+      <div class="summary-card"><div class="n">${uniqueUsers.size}</div><div class="l">Clientes Únicos</div></div>
+      <div class="summary-card"><div class="n" style="color:#059669;">${buyerUsers.size}</div><div class="l">Clientes c/ Intenção de Compra</div></div>
+    </div>
+
+    <div class="kw-section">
+      <div class="kw-title">🏷️ Filtrar por Termos de Compra (clique para filtrar na hora):</div>
+      <div class="kw-grid">${keywordCards}</div>
+    </div>
+
+    <div class="controls-card">
+      <div class="controls-row">
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="🔍 Buscar por @usuário, produto, tamanho ou palavra..." autocomplete="off">
+          <button type="button" id="btnClearSearch" class="btn-clear">✕</button>
+        </div>
+        <div class="select-wrap">
+          <select id="userSelect">
+            <option value="">👤 Todos os Usuários (${uniqueUsers.size})</option>
+            ${userOptions}
+          </select>
+        </div>
+        <button type="button" id="btnCopyBuyers" class="btn-action btn-copy">
+          📋 Copiar @ Compradores (${buyerUsers.size})
+        </button>
+        <button type="button" id="btnResetFilters" class="btn-action btn-reset">
+          🔄 Limpar Filtros
+        </button>
+      </div>
+      <div class="filter-status">
+        <span>Mostrando <strong id="shownCount">${total}</strong> de <strong>${total}</strong> comentários</span>
+        <span id="activeFilterBadge" class="filter-badge" style="display:none;"></span>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Horário</th><th>Usuário (@)</th><th>Comentário</th><th>Origem</th></tr></thead>
+        <tbody id="commentsBody">${rows}</tbody>
+      </table>
+    </div>
   </div>
 
-  <div class="kw-section">
-    <div class="meta">Contagem de Termos de Compra:</div>
-    <div class="kw-grid">${keywordCards}</div>
-  </div>
+  <div id="toast" class="toast"></div>
 
-  <table>
-    <thead><tr><th>Horário</th><th>Usuário</th><th>Comentário</th><th>Origem</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>
+  <script>
+    (function () {
+      let activeKeyword = "";
+      let activeUser = "";
+      let searchQuery = "";
+
+      const searchInput = document.getElementById("searchInput");
+      const btnClearSearch = document.getElementById("btnClearSearch");
+      const userSelect = document.getElementById("userSelect");
+      const btnResetFilters = document.getElementById("btnResetFilters");
+      const btnCopyBuyers = document.getElementById("btnCopyBuyers");
+      const shownCount = document.getElementById("shownCount");
+      const activeFilterBadge = document.getElementById("activeFilterBadge");
+      const kwCards = document.querySelectorAll(".kw-card");
+      const tableRows = document.querySelectorAll("#commentsBody tr");
+      const toast = document.getElementById("toast");
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 2500);
+      }
+
+      function applyFilters() {
+        let count = 0;
+        const q = searchQuery.trim().toLowerCase();
+        const u = activeUser.trim().toLowerCase();
+        const kw = activeKeyword.trim().toLowerCase();
+
+        tableRows.forEach((tr) => {
+          const rowUser = tr.getAttribute("data-user") || "";
+          const rowComment = tr.getAttribute("data-comment") || "";
+
+          const matchUser = !u || rowUser === u;
+          const matchKw = !kw || rowComment.includes(kw);
+          const matchQuery = !q || rowUser.includes(q) || rowComment.includes(q);
+
+          if (matchUser && matchKw && matchQuery) {
+            tr.style.display = "";
+            count++;
+          } else {
+            tr.style.display = "none";
+          }
+        });
+
+        shownCount.textContent = count;
+
+        const filters = [];
+        if (activeKeyword) filters.push('Tag: "' + activeKeyword.toUpperCase() + '"');
+        if (activeUser) filters.push('Cliente: ' + activeUser);
+        if (searchQuery) filters.push('Busca: "' + searchQuery + '"');
+
+        if (filters.length > 0) {
+          activeFilterBadge.style.display = "inline-block";
+          activeFilterBadge.textContent = "Filtros ativos: " + filters.join(" + ");
+        } else {
+          activeFilterBadge.style.display = "none";
+        }
+      }
+
+      searchInput.addEventListener("input", (e) => {
+        searchQuery = e.target.value;
+        btnClearSearch.style.display = searchQuery ? "block" : "none";
+        applyFilters();
+      });
+
+      btnClearSearch.addEventListener("click", () => {
+        searchInput.value = "";
+        searchQuery = "";
+        btnClearSearch.style.display = "none";
+        applyFilters();
+      });
+
+      userSelect.addEventListener("change", (e) => {
+        activeUser = e.target.value;
+        applyFilters();
+      });
+
+      window.filterByUser = function (user) {
+        activeUser = user;
+        userSelect.value = user;
+        applyFilters();
+        window.scrollTo({ top: document.querySelector(".controls-card").offsetTop - 20, behavior: "smooth" });
+      };
+
+      kwCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          const kw = card.getAttribute("data-kw");
+          if (activeKeyword === kw) {
+            activeKeyword = "";
+            card.classList.remove("active");
+          } else {
+            kwCards.forEach((c) => c.classList.remove("active"));
+            activeKeyword = kw;
+            card.classList.add("active");
+          }
+          applyFilters();
+        });
+      });
+
+      btnResetFilters.addEventListener("click", () => {
+        activeKeyword = "";
+        activeUser = "";
+        searchQuery = "";
+        searchInput.value = "";
+        btnClearSearch.style.display = "none";
+        userSelect.value = "";
+        kwCards.forEach((c) => c.classList.remove("active"));
+        applyFilters();
+      });
+
+      const buyersList = ${JSON.stringify(Array.from(buyerUsers))};
+      btnCopyBuyers.addEventListener("click", () => {
+        if (buyersList.length === 0) {
+          alert("Nenhum cliente com termos de compra detectado nesta sessão.");
+          return;
+        }
+        const text = buyersList.join(", ");
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            showToast("✅ " + buyersList.length + " compradores copiados para a área de transferência!");
+          }).catch(() => {
+            prompt("Copie os @ dos compradores abaixo:", text);
+          });
+        } else {
+          prompt("Copie os @ dos compradores abaixo:", text);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>`;
   }

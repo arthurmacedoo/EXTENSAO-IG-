@@ -377,7 +377,7 @@
         type: "REST_COMMENTS",
         comments: [
           {
-            pk: String(Date.now() + Math.random()),
+            pk: "sim_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
             created_at: now,
             user: { username: cleanUser },
             text: text

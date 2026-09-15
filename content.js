@@ -35,9 +35,27 @@
     currentSession: null,
     comments: [], // Cache em memória da sessão atual
     seenPks: new Set(),
-    seenFingerprints: new Set(),
+    recentCapturedMap: new Map(), // chave user::text -> timestamp (janela deslizante contra duplicatas cruzadas REST/DOM)
     lastCheckpointCount: 0,
   };
+
+  function recordRecentComment(user, text) {
+    const fp = `${user.toLowerCase().replace(/^@/, "")}::${text.toLowerCase().trim()}`;
+    const now = Date.now();
+    state.recentCapturedMap.set(fp, now);
+    if (state.recentCapturedMap.size > 250) {
+      for (const [k, ts] of state.recentCapturedMap.entries()) {
+        if (now - ts > 10000) state.recentCapturedMap.delete(k);
+      }
+    }
+  }
+
+  function isRecentlyCaptured(user, text, windowMs = 3000) {
+    const fp = `${user.toLowerCase().replace(/^@/, "")}::${text.toLowerCase().trim()}`;
+    const ts = state.recentCapturedMap.get(fp);
+    if (!ts) return false;
+    return Date.now() - ts < windowMs;
+  }
 
   let domObserver = null;
   let domInterval = null;
@@ -100,11 +118,12 @@
       const text = (c.text || "").trim();
       if (!username || !text) continue;
 
-      const fp = `${username.toLowerCase()}::${text}`;
-      if (state.seenFingerprints.has(fp)) continue;
-
-      if (pk) state.seenPks.add(pk);
-      state.seenFingerprints.add(fp);
+      if (pk) {
+        state.seenPks.add(pk);
+      } else {
+        if (isRecentlyCaptured(username, text, 2000)) continue;
+      }
+      recordRecentComment(username, text);
 
       const now = new Date(c.created_at ? c.created_at * 1000 : Date.now());
       const entry = {
@@ -204,6 +223,11 @@
   }
 
   async function processDomRow(row, fallbackUser = null) {
+    if (!row) return;
+    if (row.dataset && row.dataset.igCaptured === "true") return;
+    if (row.closest && row.closest("[data-ig-captured='true']")) return;
+    row.dataset.igCaptured = "true";
+
     let username = fallbackUser || null;
     if (!username) {
       const img = row.querySelector("img");
@@ -251,9 +275,9 @@
     }
     if (!commentText) return;
 
-    const fp = `${username.toLowerCase()}::${commentText}`;
-    if (state.seenFingerprints.has(fp)) return; // Já capturado por REST ou DOM
-    state.seenFingerprints.add(fp);
+    // Se o REST já capturou este exato comentário deste mesmo autor há menos de 3.5s, ignora para não duplicar
+    if (isRecentlyCaptured(username, commentText, 3500)) return;
+    recordRecentComment(username, commentText);
 
     const now = new Date();
     const entry = {
@@ -319,10 +343,9 @@
       const loaded = await window.LiveDB.getSessionComments(session.id);
       state.comments = loaded;
       state.seenPks.clear();
-      state.seenFingerprints.clear();
+      state.recentCapturedMap.clear();
       loaded.forEach((c) => {
         if (c.pk) state.seenPks.add(String(c.pk));
-        state.seenFingerprints.add(`${c.user.toLowerCase().replace(/^@/, "")}::${c.comment}`);
       });
       state.lastCheckpointCount = loaded.length;
     } catch (e) {
@@ -348,7 +371,7 @@
 
     state.comments = [];
     state.seenPks.clear();
-    state.seenFingerprints.clear();
+    state.recentCapturedMap.clear();
     state.lastCheckpointCount = 0;
 
     updateCounterAndPreview();

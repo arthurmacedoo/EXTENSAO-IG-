@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>noasunglasses ao vivo • Instagram Live Simulation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: #0c0f12; color: #f5f5f5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Barra Superior de Testes */
+    .test-toolbar {
+      background: #181c24; border-bottom: 2px solid #2d3748; padding: 10px 20px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; z-index: 999;
+    }
+    .test-toolbar-left { display: flex; align-items: center; gap: 10px; }
+    .sim-tag { background: #e1306c; color: #fff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; }
+    .sim-title { font-size: 13px; font-weight: 700; color: #fff; }
+    .test-toolbar-center { display: flex; gap: 8px; align-items: center; }
+    .tbtn {
+      padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;
+      border: none; transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+    }
+    .tbtn-play { background: #10b981; color: #fff; }
+    .tbtn-play:hover { background: #059669; }
+    .tbtn-pause { background: #f59e0b; color: #fff; }
+    .tbtn-pause:hover { background: #d97706; }
+    .tbtn-quick { background: #3b82f6; color: #fff; }
+    .tbtn-quick:hover { background: #2563eb; }
+    .test-toolbar-right { display: flex; gap: 8px; align-items: center; }
+    .tinput {
+      background: #0f172a; border: 1px solid #334155; color: #fff; padding: 6px 12px;
+      border-radius: 6px; font-size: 12px; outline: none; width: 220px;
+    }
+    .tinput:focus { border-color: #3b82f6; }
+
+    /* Layout da Live do Instagram */
+    .live-wrapper {
+      display: flex; flex: 1; height: calc(100vh - 54px); position: relative;
+    }
+
+    /* Coluna Esquerda: Vídeo da Live */
+    .video-container {
+      flex: 1; background: #000; position: relative; display: flex;
+      align-items: center; justify-content: center; overflow: hidden;
+    }
+    .phone-frame {
+      width: 420px; height: 92%; max-height: 820px; background: #1a1a1a;
+      border-radius: 20px; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; justify-content: space-between;
+      border: 1px solid #333;
+    }
+    .video-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #334155 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 20px;
+    }
+    .live-camera-mock {
+      width: 110px; height: 110px; border-radius: 50%;
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+      box-shadow: 0 0 25px rgba(225, 48, 108, 0.4); animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+    .camera-inner { width: 100px; height: 100px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+
+    .video-meta-top {
+      position: absolute; top: 16px; left: 16px; right: 16px;
+      display: flex; justify-content: space-between; align-items: center; z-index: 10;
+    }
+    .streamer-badge {
+      display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.5);
+      padding: 6px 12px; border-radius: 20px; backdrop-filter: blur(8px);
+    }
+    .streamer-avatar {
+      width: 28px; height: 28px; border-radius: 50%; background: #e1306c;
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px;
+    }
+    .streamer-name { font-size: 12px; font-weight: 700; }
+    .live-tag {
+      background: #e1306c; color: #fff; font-size: 10px; font-weight: 800;
+      padding: 2px 6px; border-radius: 4px;
+    }
+    .views-tag {
+      background: rgba(0,0,0,0.5); font-size: 11px; font-weight: 700;
+      padding: 3px 8px; border-radius: 12px; display: flex; align-items: center; gap: 4px;
+    }
+
+    /* Botão WhatsApp dentro da Live */
+    .whatsapp-badge {
+      position: absolute; bottom: 20px; left: 16px;
+      background: #075e54; color: #fff; padding: 10px 16px; border-radius: 12px;
+      display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      z-index: 10; font-size: 12px; font-weight: 700;
+    }
+    .wa-icon { font-size: 20px; }
+
+    /* Coluna Direita: Chat Idêntico ao Instagram Web */
+    .chat-container {
+      width: 440px; background: #ffffff; color: #262626;
+      display: flex; flex-direction: column; border-left: 1px solid #dbdbdb;
+      position: relative;
+    }
+
+    /* Cabeçalho do Chat */
+    .chat-header {
+      padding: 14px 16px; border-bottom: 1px solid #efefef;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .chat-header-user { display: flex; align-items: center; gap: 10px; }
+    .chat-header-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(45deg, #f09433, #dc2743);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: bold; font-size: 14px;
+    }
+    .chat-header-info { display: flex; flex-direction: column; }
+    .chat-header-name { font-size: 14px; font-weight: 700; color: #262626; }
+    .chat-header-live { font-size: 11px; color: #8e8e8e; }
+    .chat-header-right { display: flex; align-items: center; gap: 8px; }
+
+    /* Área de Rolagem de Comentários */
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column;
+      gap: 14px; background: #ffffff;
+    }
+
+    /* Linha de Comentário — Idêntica ao Instagram */
+    .comment-row {
+      display: flex; gap: 10px; align-items: flex-start; font-size: 13px;
+      line-height: 1.4; animation: slideUp 0.2s ease-out;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .comment-avatar {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; object-fit: cover;
+    }
+    .comment-content { flex: 1; display: flex; flex-direction: column; word-break: break-word; }
+    .comment-author { font-weight: 700; color: #262626; margin-right: 6px; cursor: pointer; }
+    .comment-text { color: #262626; font-size: 13px; }
+    .comment-action {
+      margin-top: 2px; font-size: 11px; font-weight: 600; color: #8e8e8e;
+      cursor: pointer; background: none; border: none; padding: 0; text-align: left;
+    }
+    .comment-action:hover { color: #262626; }
+
+    .system-message {
+      font-size: 12px; color: #737373; text-align: center; padding: 4px 10px;
+      margin: 4px 0; background: #f8fafc; border-radius: 8px;
+    }
+
+    /* Comentário Fixado na base do chat */
+    .pinned-comment-box {
+      border-top: 1px solid #efefef; background: #fafafa; padding: 10px 16px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .pinned-label { font-size: 11px; font-weight: 800; color: #e1306c; margin-right: 4px; }
+
+    /* Input na base do chat */
+    .chat-input-area {
+      padding: 12px 16px; border-top: 1px solid #efefef; background: #fff;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .chat-input-area input {
+      flex: 1; border: none; outline: none; font-size: 13px; color: #262626;
+    }
+    .chat-input-area input::placeholder { color: #8e8e8e; }
+    .chat-icons { display: flex; gap: 10px; color: #8e8e8e; font-size: 18px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de Controle de Testes da Extensão -->
+  <div class="test-toolbar">
+    <div class="test-toolbar-left">
+      <span class="sim-tag">SIMULADOR INSTAGRAM LIVE</span>
+      <span class="sim-title">⚡ Ambiente de Testes da Extensão IG Live</span>
+    </div>
+    <div class="test-toolbar-center">
+      <button class="tbtn tbtn-play" id="btnPlay" onclick="startSim()">▶ Iniciar Live Automática</button>
+      <button class="tbtn tbtn-pause" id="btnPause" onclick="pauseSim()">⏸ Pausar</button>
+      <button class="tbtn tbtn-quick" onclick="sendQuick('Quero tamanho M preto!')">⚡ + Quero M</button>
+      <button class="tbtn tbtn-quick" onclick="sendQuick('Pix feito! Reserva pra mim')">⚡ + Pix Feito</button>
+    </div>
+    <div class="test-toolbar-right">
+      <input type="text" id="customUser" class="tinput" placeholder="@usuario (ex: maria_vendas)" style="width: 140px;" value="@cliente_vip">
+      <input type="text" id="customText" class="tinput" placeholder="Comentário..." value="Quero 2 peças no tamanho G!">
+      <button class="tbtn tbtn-play" onclick="sendManual()">Enviar</button>
+    </div>
+  </div>
+
+  <div class="live-wrapper">
+    <!-- Coluna do Vídeo ao Vivo -->
+    <div class="video-container">
+      <div class="phone-frame">
+        <div class="video-meta-top">
+          <div class="streamer-badge">
+            <div class="streamer-avatar">NS</div>
+            <span class="streamer-name">noasunglasses</span>
+            <span class="live-tag">AO VIVO</span>
+          </div>
+          <div class="views-tag">👁 <span id="viewsCount">142</span></div>
+        </div>
+
+        <div class="video-bg">
+          <div class="live-camera-mock">
+            <div class="camera-inner">🕶️</div>
+          </div>
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">NOA SUNGLASSES</h3>
+          <p style="font-size: 12px; color: #94a3b8;">Live Commerce Especial de Óculos de Sol</p>
+          <p style="font-size: 11px; color: #10b981; margin-top: 12px; font-weight: 600;">● TRANSMISSÃO ATIVA</p>
+        </div>
+
+        <div class="whatsapp-badge">
+          <span class="wa-icon">💬</span>
+          <div>
+            <div style="font-size: 10px; text-transform: uppercase; color: #a7f3d0;">Conversar no WhatsApp</div>
+            <div style="font-size: 12px; font-weight: 800;">+55 65 9999-8888</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna do Chat do Instagram -->
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-header-user">
+          <div class="chat-header-avatar">NS</div>
+          <div class="chat-header-info">
+            <span class="chat-header-name">noasunglasses</span>
+            <span class="chat-header-live">Transmitindo ao vivo</span>
+          </div>
+        </div>
+        <div class="chat-header-right">
+          <span class="live-tag">AO VIVO</span>
+          <span style="font-size: 16px; cursor: pointer; color: #8e8e8e;">⋮</span>
+        </div>
+      </div>
+
+      <!-- Feed de Comentários -->
+      <div class="chat-messages" id="chatFeed">
+        <!-- Anúncio Oficial -->
+        <div class="comment-row">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23e1306c'/><text x='50%' y='55%' font-size='11' font-weight='bold' fill='white' dominant-baseline='middle' text-anchor='middle'>NS</text></svg>" alt="Foto do perfil de noasunglasses" class="comment-avatar">
+          <div class="comment-content">
+            <div>
+              <span class="comment-author">noasunglasses</span>
+              <span class="comment-text">[Cód] + [Tamanho] + [Cor] + [No primeiro pedido Cel c/ DDD]</span>
+            </div>
+            <button type="button" class="comment-action">Responder</button>
+          </div>
+        </div>
+
+        <div class="comment-row">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23e1306c'/><text x='50%' y='55%' font-size='11' font-weight='bold' fill='white' dominant-baseline='middle' text-anchor='middle'>NS</text></svg>" alt="Foto do perfil de noasunglasses" class="comment-avatar">
+          <div class="comment-content">
+            <div>
+              <span class="comment-author">noasunglasses</span>
+              <span class="comment-text">Quero é compromisso de compra!</span>
+            </div>
+            <button type="button" class="comment-action">Responder</button>
+          </div>
+        </div>
+
+        <div class="comment-row">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%233b82f6'/><text x='50%' y='55%' font-size='11' font-weight='bold' fill='white' dominant-baseline='middle' text-anchor='middle'>AM</text></svg>" alt="Foto do perfil de arthurmacedooo" class="comment-avatar">
+          <div class="comment-content">
+            <div>
+              <span class="comment-author">arthurmacedooo</span>
+              <span class="comment-text">oiii</span>
+            </div>
+            <button type="button" class="comment-action">Responder</button>
+          </div>
+        </div>
+
+        <div class="system-message">
+          lojaclosetcoletivo também está assistindo a esse vídeo ao vivo
+        </div>
+
+        <div class="comment-row">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%2310b981'/><text x='50%' y='55%' font-size='11' font-weight='bold' fill='white' dominant-baseline='middle' text-anchor='middle'>LC</text></svg>" alt="Foto do perfil de lojaclosetcoletivo" class="comment-avatar">
+          <div class="comment-content">
+            <div>
+              <span class="comment-author">lojaclosetcoletivo</span>
+              <span class="comment-text">Oii</span>
+            </div>
+            <button type="button" class="comment-action">Responder</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comentário Fixado -->
+      <div class="pinned-comment-box">
+        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23e1306c'/><text x='50%' y='55%' font-size='11' font-weight='bold' fill='white' dominant-baseline='middle' text-anchor='middle'>NS</text></svg>" alt="Foto do perfil de noasunglasses" class="comment-avatar">
+        <div class="comment-content">
+          <div>
+            <span class="comment-author">noasunglasses</span>
+            <span class="pinned-label">• FIXADO:</span>
+            <span class="comment-text">Quero + [CÓDIGO] + [TAMANHO] + [COR] + [No primeiro pedido Cel c/ DDD] QUERO é compromisso de compra!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Input de Comentário -->
+      <div class="chat-input-area">
+        <span>😊</span>
+        <input type="text" placeholder="Adicione um comentário...">
+        <div class="chat-icons">
+          <span>✈</span>
+          <span>🤍</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const USERS_POOL = [
+      "viajandocomleleo", "arthurmacedooo", "lojaclosetcoletivo", "mariana_souza99",
+      "beatriz_modas", "carol_alves", "lucas_style", "patricia_lima", "fernanda_vip",
+      "camila_silva", "juliana_m", "aline_costa", "vanessa_top", "renata_vendas"
+    ];
+
+    const COMMENTS_POOL = [
+      "Quero o óculos modelo 01 armação preta!",
+      "Reserva pra mim no tamanho M por favor",
+      "Qual o valor do frete para São Paulo?",
+      "Quero o dourado! Separa pra mim",
+      "Pix enviado no direct!",
+      "Tem tamanho P desse modelo?",
+      "Quero 2 unidades! Um preto e um marrom",
+      "Maravilhoso esse! Quero muito",
+      "Separa o meu, já sou cliente antiga",
+      "Tem desconto levando dois no pix?",
+      "Quero modelo aviador lente degradê",
+      "Cheguei agora! Qual o preço desse que tá mostrando?",
+      "Quero um pra presente! Envia amanhã?"
+    ];
+
+    let timer = null;
+    let commentsSentCount = 5;
+
+    function createAvatarSvg(name, bg) {
+      const initials = name.slice(0, 2).toUpperCase();
+      return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='${encodeURIComponent(bg)}'/><text x='50%' y='55%' font-size='11' font-weight='bold' fill='white' dominant-baseline='middle' text-anchor='middle'>${initials}</text></svg>`;
+    }
+
+    function addComment(user, text) {
+      const feed = document.getElementById("chatFeed");
+      const cleanUser = user.replace(/^@/, "").trim();
+
+      const colors = ["#ef4444", "#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ec4899", "#06b6d4"];
+      const bg = colors[Math.floor(Math.random() * colors.length)];
+      const avatarSrc = createAvatarSvg(cleanUser, bg);
+
+      const row = document.createElement("div");
+      row.className = "comment-row";
+      row.innerHTML = `
+        <img src="${avatarSrc}" alt="Foto do perfil de ${cleanUser}" class="comment-avatar">
+        <div class="comment-content">
+          <div>
+            <span class="comment-author">${cleanUser}</span>
+            <span class="comment-text">${escapeHtml(text)}</span>
+          </div>
+          <button type="button" class="comment-action">Responder</button>
+        </div>
+      `;
+
+      feed.appendChild(row);
+      feed.scrollTop = feed.scrollHeight;
+      commentsSentCount++;
+
+      // Simula também o evento de rede da Live (REST) para testar os dois métodos da extensão!
+      const now = Math.floor(Date.now() / 1000);
+      window.postMessage({
+        source: "IG_LIVE_INTERCEPTOR",
+        type: "REST_COMMENTS",
+        comments: [
+          {
+            pk: String(Date.now() + Math.random()),
+            created_at: now,
+            user: { username: cleanUser },
+            text: text
+          }
+        ]
+      }, "*");
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function startSim() {
+      if (timer) return;
+      document.getElementById("btnPlay").style.opacity = "0.6";
+      document.getElementById("btnPause").style.opacity = "1";
+
+      timer = setInterval(() => {
+        const u = USERS_POOL[Math.floor(Math.random() * USERS_POOL.length)];
+        const c = COMMENTS_POOL[Math.floor(Math.random() * COMMENTS_POOL.length)];
+        addComment(u, c);
+
+        // Varia visualizadores de leve
+        const v = document.getElementById("viewsCount");
+        if (v) v.textContent = Math.floor(130 + Math.random() * 25);
+      }, 2000);
+    }
+
+    function pauseSim() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      document.getElementById("btnPlay").style.opacity = "1";
+      document.getElementById("btnPause").style.opacity = "0.6";
+    }
+
+    function sendQuick(txt) {
+      const u = USERS_POOL[Math.floor(Math.random() * USERS_POOL.length)];
+      addComment(u, txt);
+    }
+
+    function sendManual() {
+      const u = document.getElementById("customUser").value.trim() || "@cliente_novo";
+      const t = document.getElementById("customText").value.trim() || "Quero comprar!";
+      addComment(u, t);
+    }
+  </script>
+</body>
+</html>

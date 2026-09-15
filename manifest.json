@@ -15,7 +15,10 @@
   ],
   "host_permissions": [
     "*://*.instagram.com/*",
-    "*://instagram.com/*"
+    "*://instagram.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "file:///*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -33,7 +36,10 @@
     {
       "matches": [
         "*://*.instagram.com/*",
-        "*://instagram.com/*"
+        "*://instagram.com/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "file:///*"
       ],
       "js": ["interceptor.js"],
       "world": "MAIN",
@@ -42,7 +48,10 @@
     {
       "matches": [
         "*://*.instagram.com/*",
-        "*://instagram.com/*"
+        "*://instagram.com/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "file:///*"
       ],
       "js": ["db.js", "content.js"],
       "css": ["content.css"],

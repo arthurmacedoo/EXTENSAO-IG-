@@ -1,12 +1,13 @@
 /**
  * content.js — IG Live: Captura de Comentários
  * ---------------------------------------------------------------------
- * Versão Corrigida:
- * - Inicia sempre PAUSADO/DESLIGADO por padrão (não captura feed/perfil).
- * - Botão evidente de LIGAR / DESLIGAR no painel e via popup.
- * - Detecção contextual de Live vs Instagram normal.
- * - Proteção contra "Extension context invalidated" e erro em chrome.storage.local.set.
- * - Filtros reforçados para ignorar navegação, perfis e cabeçalhos.
+ * Versão 1.2.0:
+ * - Suporte nativo ao layout real da Live do Instagram (captura por botão "Responder" e avatar).
+ * - Extração precisa do @username (via alt da foto de perfil ou nó de texto) e do comentário limpo.
+ * - Varredura em tempo real por MutationObserver + Intervalo de segurança (1s).
+ * - Captura imediata dos comentários que já estão na tela ao clicar em "Ligar Captura".
+ * - Preservação de emojis nos comentários.
+ * - Inicia sempre DESLIGADO para proteção do usuário.
  * ---------------------------------------------------------------------
  */
 
@@ -16,12 +17,9 @@
   const STORAGE_KEY = "igLiveCapture_v1";
 
   const CONFIG = {
-    MAX_CLIMB_LEVELS: 5,
-    MAX_CONTAINER_TEXT_LENGTH: 400,
-    ABORT_CLIMB_TEXT_LENGTH: 600,
-    MAX_ANCHORS_IN_CONTAINER: 2,
-    AUTO_BACKUP_INTERVAL_MS: 10 * 60 * 1000,
+    AUTO_BACKUP_INTERVAL_MS: 10 * 60 * 1000, // 10 minutos
     PERSIST_DEBOUNCE_MS: 300,
+    SCAN_INTERVAL_MS: 1000, // Polling a cada 1 segundo para garantir que nenhum comentário escape
   };
 
   const IGNORED_ROUTES = new Set([
@@ -40,18 +38,17 @@
 
   const PURCHASE_KEYWORDS = ["quero", "reserva", "separa", "tamanho", "pix", "valor", "preço", "comprar"];
 
-  const USERNAME_REGEX = /^\/([a-zA-Z0-9._]+)\/?$/;
-
-  /** @type {{status:'recording'|'paused'|'ended', comments: Array<{captured_time:string, captured_at:string, user:string, comment:string}>}} */
-  let state = { status: "paused", comments: [] }; // SEMPRE começa pausado!
+  /** @type {{status:'recording'|'paused', comments: Array<{captured_time:string, captured_at:string, user:string, comment:string, timestampMs?:number}>}} */
+  let state = { status: "paused", comments: [] };
 
   let observer = null;
+  let liveScanInterval = null;
   let autoBackupTimer = null;
   let saveTimer = null;
   const panelEls = {};
 
   // ----------------------------------------------------------------
-  // Validações e Contexto de Extensão
+  // Validações e Contexto
   // ----------------------------------------------------------------
 
   function isExtensionValid() {
@@ -64,36 +61,298 @@
 
   function checkLiveContext() {
     if (isLiveUrl()) return true;
-    // Verifica se há elementos de transmissão ao vivo na tela
     const hasLiveBadge = !!document.querySelector('[aria-label*="ao vivo" i], [aria-label*="live" i]');
     const hasVideo = !!document.querySelector("video");
-    return hasVideo && hasLiveBadge;
+    const hasResponder = Array.from(document.querySelectorAll('button, [role="button"], span')).some(
+      el => el.children.length === 0 && (el.textContent || "").trim().toLowerCase() === "responder"
+    );
+    return (hasVideo && hasLiveBadge) || hasResponder;
   }
 
   // ----------------------------------------------------------------
-  // Utilidades de texto / DOM
+  // Extração de Dados do DOM da Live do Instagram
   // ----------------------------------------------------------------
 
-  function extractUsernameFromHref(href) {
-    if (!href) return null;
-    try {
-      const url = new URL(href, location.origin);
-      const isAllowedHost =
-        /(^|\.)instagram\.com$/.test(url.hostname) ||
-        url.hostname === "localhost" ||
-        url.hostname === "127.0.0.1";
-      if (!isAllowedHost) return null;
+  function extractUserFromAlt(alt) {
+    if (!alt || typeof alt !== "string") return null;
+    const s = alt.trim().replace(/\.$/, "");
 
-      const match = url.pathname.match(USERNAME_REGEX);
-      if (!match) return null;
+    // Português: "Foto do perfil de lojaclosetcoletivo" ou "Foto de perfil de..."
+    let m = s.match(/(?:foto\s+(?:do|de)\s+)?perfil\s+d[eoa]\s+([a-zA-Z0-9._]+)/i);
+    if (m) return m[1];
 
-      const username = match[1].toLowerCase();
-      if (IGNORED_ROUTES.has(username)) return null;
-      return username;
-    } catch (e) {
-      return null;
+    // Espanhol: "Foto del perfil de usuario"
+    m = s.match(/(?:foto\s+del\s+)?perfil\s+de\s+([a-zA-Z0-9._]+)/i);
+    if (m) return m[1];
+
+    // Inglês: "username's profile picture"
+    m = s.match(/^([a-zA-Z0-9._]+)['’]s\s+profile\s+(?:picture|photo)/i);
+    if (m) return m[1];
+
+    // "Profile picture of username"
+    m = s.match(/profile\s+(?:picture|photo)\s+of\s+([a-zA-Z0-9._]+)/i);
+    if (m) return m[1];
+
+    // Nome direto no alt
+    m = s.match(/^@?([a-zA-Z0-9._]{2,35})$/);
+    if (m) return m[1];
+
+    return null;
+  }
+
+  function processCommentRow(row) {
+    if (!row || row.dataset.igCaptured === "true") return false;
+    if (row.closest("#ig-live-capture-panel")) return false;
+
+    // 1. Localiza avatar para extrair o usuário
+    let username = null;
+    const img = row.querySelector("img");
+    if (img && img.alt) {
+      username = extractUserFromAlt(img.alt);
+    }
+
+    // 2. Se não achou pelo alt, tenta achar em links internos da linha
+    if (!username) {
+      const anchor = row.querySelector("a[href]");
+      if (anchor) {
+        const href = anchor.getAttribute("href") || "";
+        const m = href.match(/\/([a-zA-Z0-9._]+)\/?$/);
+        if (m && !IGNORED_ROUTES.has(m[1].toLowerCase())) {
+          username = m[1];
+        }
+      }
+    }
+
+    // 3. Clona o elemento para limpar e extrair o texto
+    const clone = row.cloneNode(true);
+
+    // Converte emojis em formato de imagem para texto
+    clone.querySelectorAll("img").forEach((i) => {
+      const alt = i.getAttribute("alt") || "";
+      if (alt && !alt.toLowerCase().includes("perfil") && !alt.toLowerCase().includes("profile")) {
+        i.replaceWith(document.createTextNode(alt));
+      } else {
+        i.remove();
+      }
+    });
+
+    // Remove botões de ação e SVGs (ex: botão "Responder", corações, etc.)
+    clone.querySelectorAll('button, [role="button"], svg').forEach((b) => b.remove());
+
+    // Remove palavras de ação que estejam em nós filhos
+    clone.querySelectorAll("*").forEach((el) => {
+      if (el.children.length === 0) {
+        const t = (el.textContent || "").trim().toLowerCase();
+        if (ACTION_WORDS.has(t)) {
+          el.remove();
+        }
+      }
+    });
+
+    let rawText = (clone.innerText || clone.textContent || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!rawText) return false;
+
+    let commentText = "";
+
+    if (username) {
+      // Se já temos o username via alt ou link, remove ele do início do texto
+      const userRegex = new RegExp(
+        "^@?" + username.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "[:\\s-]*",
+        "i"
+      );
+      commentText = rawText.replace(userRegex, "").trim();
+    } else {
+      // Caso não tenhamos o alt, a primeira palavra é quase sempre o nome do usuário no layout do IG
+      const parts = rawText.split(/\s+/);
+      if (parts.length >= 2) {
+        username = parts[0].replace(/^@/, "").replace(/[:]$/, "").trim();
+        commentText = parts.slice(1).join(" ").trim();
+      }
+    }
+
+    if (!username || !commentText) return false;
+    if (IGNORED_ROUTES.has(username.toLowerCase())) return false;
+
+    // Limpa sobras de "responder" ou "reply" no final do texto
+    for (const act of ACTION_WORDS) {
+      const actRegex = new RegExp("\\s*" + act + "$", "i");
+      commentText = commentText.replace(actRegex, "").trim();
+    }
+
+    if (!commentText) return false;
+
+    // Marca o container físico para não processar duas vezes
+    row.dataset.igCaptured = "true";
+
+    registerComment(username, commentText);
+    return true;
+  }
+
+  function scanLiveComments() {
+    if (state.status !== "recording") return;
+
+    // ESTRATÉGIA A: Localizar comentários pelo botão "Responder" / "Reply"
+    const leaves = document.querySelectorAll('button, [role="button"], span, div');
+    const responderEls = [];
+    for (let i = 0; i < leaves.length; i++) {
+      const el = leaves[i];
+      if (el.children.length > 0) continue;
+      const t = (el.textContent || "").trim().toLowerCase();
+      if (t === "responder" || t === "reply") {
+        responderEls.push(el);
+      }
+    }
+
+    for (const respEl of responderEls) {
+      let row = respEl.parentElement;
+      for (let depth = 0; depth < 5 && row && row !== document.body; depth++) {
+        if (row.dataset && row.dataset.igCaptured === "true") break;
+        if (row.id === "ig-live-capture-panel") break;
+
+        const fullText = (row.innerText || row.textContent || "").trim();
+        if (fullText.length > 5 && fullText.length < 600) {
+          // Garante que é uma única linha de comentário (não o chat inteiro agrupado)
+          const nested = row.querySelectorAll('button, [role="button"], span, div');
+          let respCount = 0;
+          for (let k = 0; k < nested.length; k++) {
+            if (nested[k].children.length === 0) {
+              const ct = (nested[k].textContent || "").trim().toLowerCase();
+              if (ct === "responder" || ct === "reply") respCount++;
+            }
+          }
+          if (respCount === 1) {
+            processCommentRow(row);
+            break;
+          }
+        }
+        row = row.parentElement;
+      }
+    }
+
+    // ESTRATÉGIA B: Localizar comentários por avatares na área de chat
+    const imgs = document.querySelectorAll('img[alt*="perfil" i], img[alt*="profile" i], img[alt*="foto" i]');
+    for (let i = 0; i < imgs.length; i++) {
+      const img = imgs[i];
+      if (img.closest('#ig-live-capture-panel, header, [role="banner"]')) continue;
+
+      let row = img.parentElement;
+      for (let depth = 0; depth < 5 && row && row !== document.body; depth++) {
+        if (row.dataset && row.dataset.igCaptured === "true") break;
+        if (row.querySelector("header, video")) break;
+
+        const text = (row.innerText || row.textContent || "").trim();
+        if (text.length > 2 && text.length < 500) {
+          const rowImgs = row.querySelectorAll("img");
+          if (rowImgs.length <= 2) {
+            processCommentRow(row);
+            break;
+          }
+        }
+        row = row.parentElement;
+      }
     }
   }
+
+  // ----------------------------------------------------------------
+  // Gerenciamento de Observadores e Varredura Contínua
+  // ----------------------------------------------------------------
+
+  function handleMutations(mutations) {
+    if (state.status !== "recording") return;
+    scanLiveComments();
+  }
+
+  function startScanning() {
+    scanLiveComments();
+
+    if (!observer) {
+      observer = new MutationObserver(handleMutations);
+      observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    }
+
+    if (!liveScanInterval) {
+      liveScanInterval = setInterval(scanLiveComments, CONFIG.SCAN_INTERVAL_MS);
+    }
+
+    startAutoBackup();
+  }
+
+  function stopScanning() {
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
+    if (liveScanInterval) {
+      clearInterval(liveScanInterval);
+      liveScanInterval = null;
+    }
+    stopAutoBackup();
+  }
+
+  // ----------------------------------------------------------------
+  // Armazenamento
+  // ----------------------------------------------------------------
+
+  function registerComment(user, comment) {
+    const cleanUser = user.replace(/^@/, "").trim();
+    const cleanComment = comment.trim();
+    if (!cleanComment) return;
+
+    // Evita duplicatas imediatas consecutivas (mesmo autor e texto em menos de 2s)
+    const nowMs = Date.now();
+    const last = state.comments[state.comments.length - 1];
+    if (
+      last &&
+      last.user === "@" + cleanUser &&
+      last.comment === cleanComment &&
+      nowMs - (last.timestampMs || 0) < 2000
+    ) {
+      return;
+    }
+
+    const now = new Date();
+    const entry = {
+      captured_time: now.toLocaleTimeString("pt-BR", { hour12: false }),
+      captured_at: now.toISOString(),
+      user: "@" + cleanUser,
+      comment: cleanComment,
+      timestampMs: nowMs,
+    };
+
+    state.comments.push(entry);
+    persistState();
+    updateCounterAndPreview(entry);
+  }
+
+  function persistState() {
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(persistStateImmediate, CONFIG.PERSIST_DEBOUNCE_MS);
+  }
+
+  function persistStateImmediate() {
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+    if (!isExtensionValid() || !chrome.storage?.local) return;
+
+    try {
+      chrome.storage.local.set({ [STORAGE_KEY]: state }, () => {
+        if (chrome.runtime?.lastError) {
+          console.warn("[IG Live Capture] Erro de gravação:", chrome.runtime.lastError.message);
+        }
+      });
+    } catch (err) {
+      console.warn("[IG Live Capture] Falha ao persistir estado:", err);
+    }
+  }
+
+  // ----------------------------------------------------------------
+  // Exportações (CSV / HTML / JSON)
+  // ----------------------------------------------------------------
 
   function escapeHtml(str) {
     return String(str)
@@ -111,177 +370,6 @@
       d.getHours()
     )}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
   }
-
-  // ----------------------------------------------------------------
-  // Heurística de Captura via DOM
-  // ----------------------------------------------------------------
-
-  function isInIgnoredArea(el) {
-    if (!el) return true;
-    // Ignora elementos de navegação lateral, topo, perfil e cabeçalho do IG
-    return !!el.closest(
-      'nav, header, [role="navigation"], [role="banner"], #ig-live-capture-panel, [data-ig-captured="true"]'
-    );
-  }
-
-  function cleanCommentText(containerEl, authorHref) {
-    const clone = containerEl.cloneNode(true);
-    const targetUser = extractUsernameFromHref(authorHref);
-
-    // Remove apenas links que apontam para o autor
-    clone.querySelectorAll("a[href]").forEach((a) => {
-      const h = a.getAttribute("href");
-      if (h === authorHref || (targetUser && extractUsernameFromHref(h) === targetUser)) {
-        a.remove();
-      }
-    });
-
-    // Remove botões e ícones ("Curtir", "Responder", etc.)
-    clone.querySelectorAll('button, [role="button"], svg').forEach((b) => b.remove());
-
-    let text = clone.innerText || clone.textContent || "";
-    text = text
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l.length && !ACTION_WORDS.has(l.toLowerCase()))
-      .join(" ");
-    text = text.replace(/\s+/g, " ").trim();
-    return text;
-  }
-
-  function findCommentContainerAndText(anchor) {
-    if (isInIgnoredArea(anchor)) return null;
-
-    const href = anchor.getAttribute("href");
-    let el = anchor;
-    for (let i = 0; i < CONFIG.MAX_CLIMB_LEVELS && el && el.parentElement; i++) {
-      el = el.parentElement;
-      if (!el || el === document.body) return null;
-      if (isInIgnoredArea(el)) return null;
-
-      const totalTextLen = (el.innerText || el.textContent || "").length;
-      if (totalTextLen > CONFIG.ABORT_CLIMB_TEXT_LENGTH) break;
-
-      const anchorCount = el.querySelectorAll("a[href]").length;
-      if (anchorCount > CONFIG.MAX_ANCHORS_IN_CONTAINER) break;
-
-      const text = cleanCommentText(el, href);
-      if (text.length > 0 && text.length < CONFIG.MAX_CONTAINER_TEXT_LENGTH) {
-        return { container: el, text };
-      }
-    }
-    return null;
-  }
-
-  function tryProcessAnchor(anchor, isInitialScan = false) {
-    if (!anchor || !anchor.getAttribute) return;
-    if (state.status !== "recording") return; // NUNCA processa se estiver pausado/desligado!
-    if (isInIgnoredArea(anchor)) return;
-
-    const href = anchor.getAttribute("href");
-    const username = extractUsernameFromHref(href);
-    if (!username) return;
-
-    const res = findCommentContainerAndText(anchor);
-    if (!res || !res.text) return;
-
-    // Marca como capturado no DOM para não duplicar
-    res.container.dataset.igCaptured = "true";
-
-    // Evita duplicatas se já existe registro com mesmo usuário e comentário nos últimos instantes
-    const alreadyCaptured = state.comments.some(
-      (c) => c.user === "@" + username && c.comment === res.text
-    );
-    if (alreadyCaptured) return;
-
-    registerComment(username, res.text);
-  }
-
-  function scanNodeForAnchors(node) {
-    if (state.status !== "recording") return;
-    if (!(node instanceof Element)) return;
-    if (isInIgnoredArea(node)) return;
-
-    if (node.tagName === "A" && node.hasAttribute("href")) {
-      tryProcessAnchor(node, false);
-    }
-    if (typeof node.querySelectorAll === "function") {
-      node.querySelectorAll("a[href]").forEach((a) => tryProcessAnchor(a, false));
-    }
-  }
-
-  function handleMutations(mutations) {
-    if (state.status !== "recording") return;
-    for (const mutation of mutations) {
-      mutation.addedNodes.forEach(scanNodeForAnchors);
-    }
-  }
-
-  function attachObserver() {
-    if (observer) observer.disconnect();
-    observer = new MutationObserver(handleMutations);
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  function detachObserver() {
-    if (observer) {
-      observer.disconnect();
-      observer = null;
-    }
-  }
-
-  function doInitialScan() {
-    if (state.status !== "recording") return;
-    document.querySelectorAll("a[href]").forEach((a) => tryProcessAnchor(a, true));
-  }
-
-  // ----------------------------------------------------------------
-  // Armazenamento com Tratamento Seguro de Erros (Fix linha 242)
-  // ----------------------------------------------------------------
-
-  function registerComment(user, comment) {
-    const now = new Date();
-    const entry = {
-      captured_time: now.toLocaleTimeString("pt-BR", { hour12: false }),
-      captured_at: now.toISOString(),
-      user: "@" + user,
-      comment,
-    };
-    state.comments.push(entry);
-    persistState();
-    updateCounterAndPreview(entry);
-  }
-
-  function persistState() {
-    if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(persistStateImmediate, CONFIG.PERSIST_DEBOUNCE_MS);
-  }
-
-  function persistStateImmediate() {
-    if (saveTimer) {
-      clearTimeout(saveTimer);
-      saveTimer = null;
-    }
-    // Proteção essencial: se a extensão foi recarregada no DevTools, evita erro de contexto
-    if (!isExtensionValid() || !chrome.storage || !chrome.storage.local) {
-      return;
-    }
-
-    try {
-      // Usa callback compatível com qualquer versão do Chrome para evitar erro de .catch em undefined
-      chrome.storage.local.set({ [STORAGE_KEY]: state }, () => {
-        if (chrome.runtime?.lastError) {
-          console.warn("[IG Live Capture] Erro de gravação:", chrome.runtime.lastError.message);
-        }
-      });
-    } catch (err) {
-      console.warn("[IG Live Capture] Falha ao persistir estado:", err);
-    }
-  }
-
-  // ----------------------------------------------------------------
-  // Exportações
-  // ----------------------------------------------------------------
 
   function buildCSV(comments) {
     const header = ["captured_time", "captured_at", "user", "comment"];
@@ -481,16 +569,15 @@
 
   function updateStatusBadge() {
     if (!panelEls.statusBadge || !panelEls.btnTogglePower) return;
-    panelEls.statusBadge.classList.remove("recording", "paused", "ended");
 
     const inLive = checkLiveContext();
     if (panelEls.liveContextBadge) {
       if (inLive) {
         panelEls.liveContextBadge.textContent = "🔴 Live Detectada";
-        panelEls.liveContextBadge.className = "ig-lc-ctx-live";
+        panelEls.liveContextBadge.className = "ig-lc-ctx-badge ig-lc-ctx-live";
       } else {
         panelEls.liveContextBadge.textContent = "⚪ Fora de Live";
-        panelEls.liveContextBadge.className = "ig-lc-ctx-normal";
+        panelEls.liveContextBadge.className = "ig-lc-ctx-badge ig-lc-ctx-normal";
       }
     }
 
@@ -518,31 +605,20 @@
       panelEls.preview.textContent = `${entry.user}: ${entry.comment}`;
       panelEls.preview.title = `${entry.captured_time} — ${entry.user}: ${entry.comment}`;
     } else {
-      panelEls.preview.textContent = state.status === "recording" 
-        ? "Aguardando novos comentários..." 
-        : "Captura desligada. Clique em 'Ligar Captura' para iniciar.";
+      panelEls.preview.textContent =
+        state.status === "recording"
+          ? "Aguardando novos comentários..."
+          : "Captura desligada. Clique em 'Ligar Captura' para iniciar.";
     }
   }
 
   function onTogglePower() {
     if (state.status === "recording") {
-      // DESLIGAR
       state.status = "paused";
-      detachObserver();
-      stopAutoBackup();
+      stopScanning();
     } else {
-      // LIGAR
-      const inLive = checkLiveContext();
-      if (!inLive) {
-        const proceed = window.confirm(
-          "Aviso: Nenhuma Live do Instagram foi detectada nesta aba no momento.\n\nDeseja ligar a captura mesmo assim?"
-        );
-        if (!proceed) return;
-      }
       state.status = "recording";
-      attachObserver();
-      doInitialScan();
-      startAutoBackup();
+      startScanning();
     }
     persistStateImmediate();
     updateStatusBadge();
@@ -634,7 +710,6 @@
     const body = document.createElement("div");
     body.className = "ig-lc-body";
 
-    // BOTÃO PRINCIPAL LIGAR / DESLIGAR
     const btnTogglePower = document.createElement("button");
     btnTogglePower.type = "button";
     btnTogglePower.className = "ig-lc-btn-power is-off";
@@ -678,7 +753,7 @@
   }
 
   // ----------------------------------------------------------------
-  // Mensagens do Popup (Para controlar pelo ícone da extensão)
+  // Mensagens do Popup
   // ----------------------------------------------------------------
 
   if (isExtensionValid()) {
@@ -718,8 +793,7 @@
         const stored = await chrome.storage.local.get(STORAGE_KEY);
         if (stored && stored[STORAGE_KEY]) {
           state = Object.assign({ status: "paused", comments: [] }, stored[STORAGE_KEY]);
-          // SEGURANÇA: sempre inicia PAUSADO para não capturar navegação comum!
-          state.status = "paused";
+          state.status = "paused"; // Sempre inicia pausado por padrão
         }
       }
     } catch (e) {
@@ -730,14 +804,10 @@
     updateStatusBadge();
     updateCounterAndPreview();
 
-    // Observe mudanças de URL dentro de SPAs do Instagram
-    let lastUrl = location.href;
+    // Monitora mudanças de tela ou Live
     setInterval(() => {
-      if (location.href !== lastUrl) {
-        lastUrl = location.href;
-        updateStatusBadge();
-      }
-    }, 1500);
+      updateStatusBadge();
+    }, 2000);
   }
 
   if (document.readyState === "complete" || document.readyState === "interactive") {

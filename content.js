@@ -37,6 +37,7 @@
     seenPks: new Set(),
     recentCapturedMap: new Map(), // chave user::text -> timestamp (janela deslizante contra duplicatas cruzadas REST/DOM)
     lastCheckpointCount: 0,
+    autoBackupEnabled: true,
   };
 
   function recordRecentComment(user, text) {
@@ -435,13 +436,14 @@
     updateCounterAndPreview(entry);
 
     // Auto-checkpoint a cada N comentários
-    if (state.comments.length - state.lastCheckpointCount >= CONFIG.AUTO_CHECKPOINT_COUNT) {
+    if (state.autoBackupEnabled && state.comments.length - state.lastCheckpointCount >= CONFIG.AUTO_CHECKPOINT_COUNT) {
       state.lastCheckpointCount = state.comments.length;
       triggerSilentCheckpoint();
     }
   }
 
   function triggerSilentCheckpoint() {
+    if (!state.autoBackupEnabled) return;
     if (state.comments.length === 0) return;
     const filename = `backup_segurança_${state.currentSession?.id || "live"}_${state.comments.length}coment.csv`;
     sendDownload(buildCSV(state.comments), "text/csv;charset=utf-8", filename);
@@ -1338,6 +1340,9 @@
           showPanel();
         }
         sendResponse({ ok: true });
+      } else if (req.type === "SET_AUTO_BACKUP") {
+        state.autoBackupEnabled = !!req.value;
+        sendResponse({ ok: true });
       }
       return true;
     });
@@ -1356,11 +1361,16 @@
 
     // Por padrão o painel flutuante fica OCULTO, a menos que a preferência autoOpenOnInstagram esteja ativa
     if (typeof chrome !== "undefined" && chrome.storage?.local) {
-      chrome.storage.local.get(["autoOpenOnInstagram"], (res) => {
-        if (res && res.autoOpenOnInstagram === true) {
-          showPanel();
-        } else {
-          hidePanel();
+      chrome.storage.local.get(["autoOpenOnInstagram", "autoBackupEnabled"], (res) => {
+        if (res) {
+          if (res.autoOpenOnInstagram === true) {
+            showPanel();
+          } else {
+            hidePanel();
+          }
+          if (typeof res.autoBackupEnabled === "boolean") {
+            state.autoBackupEnabled = res.autoBackupEnabled;
+          }
         }
       });
     } else {

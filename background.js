@@ -1,6 +1,15 @@
 /**
- * background.js — Service worker para downloads e suporte à extensão
+ * background.js — Service worker para downloads e prevenção contra suspensão de abas
  */
+
+// Mantém canais de comunicação com a aba da live para evitar Tab Discarding
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === "IG_LIVE_KEEP_ALIVE") {
+    port.onDisconnect.addListener(() => {
+      // Porta desconectada (aba fechada ou recarregada)
+    });
+  }
+});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "IG_LIVE_DOWNLOAD") {
@@ -13,7 +22,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       chrome.downloads.download(
         {
           url: dataUrl,
-          filename: filename || `ig_live_${Date.now()}.txt`,
+          filename: filename || `ig_live_${Date.now()}.csv`,
           saveAs: false,
         },
         (downloadId) => {
@@ -27,6 +36,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } catch (err) {
       sendResponse({ ok: false, error: err.message });
     }
-    return true; // async
+    return true; // resposta assíncrona
   }
 });

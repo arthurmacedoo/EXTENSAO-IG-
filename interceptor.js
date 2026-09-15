@@ -14,6 +14,32 @@
 (function () {
   "use strict";
 
+  function extractComments(data) {
+    if (!data) return [];
+    if (Array.isArray(data.comments) || Array.isArray(data.system_comments)) {
+      return (data.comments || []).concat(data.system_comments || []);
+    }
+    if (data.data) {
+      if (Array.isArray(data.data.comments)) return data.data.comments;
+      if (Array.isArray(data.data.live_comments)) return data.data.live_comments;
+      for (const k of Object.keys(data.data)) {
+        if (data.data[k] && Array.isArray(data.data[k].comments)) {
+          return data.data[k].comments;
+        }
+      }
+    }
+    return [];
+  }
+
+  function isCommentRequest(url) {
+    if (!url || typeof url !== "string") return false;
+    return (
+      url.includes("/get_comment/") ||
+      (url.includes("/live/") && url.includes("comment")) ||
+      (url.includes("/api/v1/live/") && url.includes("/comment/"))
+    );
+  }
+
   // 1. Interceptação de window.fetch
   const originalFetch = window.fetch;
   window.fetch = async function (...args) {
@@ -22,18 +48,18 @@
       const url = typeof args[0] === "string" ? args[0] : args[0]?.url || "";
 
       // Intercepta comentários de Live
-      if (url.includes("/get_comment/") || (url.includes("/api/v1/live/") && url.includes("/comment/"))) {
+      if (isCommentRequest(url)) {
         const clone = response.clone();
         clone
           .json()
           .then((data) => {
-            if (data && (Array.isArray(data.comments) || Array.isArray(data.system_comments))) {
-              const all = (data.comments || []).concat(data.system_comments || []);
+            const list = extractComments(data);
+            if (list.length > 0) {
               window.postMessage(
                 {
                   source: "IG_LIVE_INTERCEPTOR",
                   type: "REST_COMMENTS",
-                  comments: all,
+                  comments: list,
                 },
                 "*"
               );
@@ -65,15 +91,15 @@
   XMLHttpRequest.prototype.open = function (method, url, ...rest) {
     this.addEventListener("load", function () {
       try {
-        if (typeof url === "string" && url.includes("/get_comment/")) {
+        if (typeof url === "string" && isCommentRequest(url)) {
           const data = JSON.parse(this.responseText);
-          if (data && (Array.isArray(data.comments) || Array.isArray(data.system_comments))) {
-            const all = (data.comments || []).concat(data.system_comments || []);
+          const list = extractComments(data);
+          if (list.length > 0) {
             window.postMessage(
               {
                 source: "IG_LIVE_INTERCEPTOR",
                 type: "REST_COMMENTS",
-                comments: all,
+                comments: list,
               },
               "*"
             );

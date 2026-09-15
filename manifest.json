@@ -3,30 +3,47 @@
   "name": "IG Live - Captura Profissional de Comentários",
   "version": "2.0.0",
   "description": "Captura ultra-robusta de comentários para Live Commerce com arquitetura híbrida (REST + DOM), persistência IndexedDB e proteção anti-perda.",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "permissions": [
     "storage",
     "unlimitedStorage",
     "downloads"
   ],
   "host_permissions": [
-    "https://www.instagram.com/*"
+    "*://*.instagram.com/*",
+    "*://instagram.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "IG Live Captura"
+    "default_title": "IG Live Captura",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://www.instagram.com/*"],
+      "matches": [
+        "*://*.instagram.com/*",
+        "*://instagram.com/*"
+      ],
       "js": ["interceptor.js"],
       "world": "MAIN",
       "run_at": "document_start"
     },
     {
-      "matches": ["https://www.instagram.com/*"],
+      "matches": [
+        "*://*.instagram.com/*",
+        "*://instagram.com/*"
+      ],
       "js": ["db.js", "content.js"],
       "css": ["content.css"],
       "run_at": "document_idle"

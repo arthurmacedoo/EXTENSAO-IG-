@@ -1290,15 +1290,25 @@
         if (user) {
           // Usuário autenticado: verificar Camada 3 (Vínculo da Chave + Licença no Firestore)
           try {
-            const userDoc = await fbDb.collection("users").doc(user.uid).get();
-            if (!userDoc.exists) {
+            let userDoc = await fbDb.collection("users").doc(user.uid).get();
+            if (!userDoc.exists && user.email) {
+              userDoc = await fbDb.collection("users").doc(user.email).get();
+            }
+            let licenseKey = userDoc.exists ? userDoc.data().licenseKey : null;
+
+            // Fallback: se não achar na collection users, busca direto em licenses por email_cliente
+            if (!licenseKey && user.email) {
+              const licQuery = await fbDb.collection("licenses").where("email_cliente", "==", user.email).limit(1).get();
+              if (!licQuery.empty) {
+                licenseKey = licQuery.docs[0].id;
+              }
+            }
+
+            if (!licenseKey) {
               showLoginError("Conta sem licença vinculada. Solicite liberação ao administrador.");
               fbAuth.signOut();
               return;
             }
-
-            const userData = userDoc.data();
-            const licenseKey = userData.licenseKey;
 
             // Escuta em tempo real da licença (CAMADA 4: REVOGAÇÃO INSTANTÂNEA / KILLSWITCH)
             if (unsubscribeKillswitch) unsubscribeKillswitch();

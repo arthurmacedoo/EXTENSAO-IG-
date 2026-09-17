@@ -1607,11 +1607,13 @@
             console.error("Falha no login:", err);
             let msg = "E-mail ou senha incorretos.";
             if (err.code === "auth/operation-not-allowed") {
-              msg = "Atenção: O provedor 'E-mail/senha' não está ativado no Firebase Console (Menu: Authentication > Sign-in method).";
+              msg = "Atenção: O provedor 'E-mail/senha' não está ativado no Firebase Console (Menu: Authentication > Método de login).";
+            } else if (err.code === "auth/unauthorized-domain") {
+              msg = "Domínio bloqueado no Firebase. Adicione 'extensao-ig.vercel.app' em Authentication > Configurações > Domínios autorizados.";
             } else if (err.code === "auth/user-not-found") {
-              msg = "Usuário não encontrado no Firebase. Adicione este e-mail na aba Authentication > Users.";
+              msg = "Usuário não encontrado no Firebase. Adicione este e-mail na aba Authentication > Usuários.";
             } else if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-              msg = "Senha ou e-mail inválidos no Firebase. Verifique se o usuário foi criado na aba Authentication.";
+              msg = "Senha incorreta ou credencial inválida no Firebase. Verifique a senha cadastrada.";
             } else if (err.message) {
               msg = `${err.message} [${err.code || 'erro'}]`;
             }

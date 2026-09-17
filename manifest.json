@@ -12,15 +12,24 @@
     "storage",
     "unlimitedStorage",
     "downloads",
-    "activeTab"
+    "activeTab",
+    "tabs"
   ],
   "host_permissions": [
     "*://*.instagram.com/*",
     "*://instagram.com/*",
+    "*://*.vercel.app/*",
     "http://localhost/*",
     "http://127.0.0.1/*",
     "file:///*"
   ],
+  "externally_connectable": {
+    "matches": [
+      "https://*.vercel.app/*",
+      "http://localhost:*/*",
+      "http://127.0.0.1:*/*"
+    ]
+  },
   "action": {
     "default_popup": "popup.html",
     "default_title": "IG Live Captura",

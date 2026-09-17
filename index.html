@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>IG Live Captura • Painel Operacional Unificado</title>
+  
+  <!-- FONTES & ÍCONES OFICIAIS -->
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+  
+  <!-- CHART.JS PARA RELATÓRIOS E ANÁLISES -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- GOOGLE FIREBASE SDK (AUTH & FIRESTORE PARA SEGURANÇA 4 CAMADAS) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  
+  <!-- TAILWIND CSS CDN & TEMA STITCH STREAMPULSE -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#0b1326",
+            "surface": "#0b1326",
+            "surface-dim": "#0b1326",
+            "surface-bright": "#31394d",
+            "surface-container-lowest": "#060e20",
+            "surface-container-low": "#131b2e",
+            "surface-container": "#171f33",
+            "surface-container-high": "#222a3d",
+            "surface-container-highest": "#2d3449",
+            "primary": "#b4c5ff",
+            "primary-container": "#2563eb",
+            "on-primary-container": "#eeefff",
+            "secondary": "#ffb3ad",
+            "secondary-container": "#a40217",
+            "tertiary": "#4edea3",
+            "tertiary-container": "#007d55",
+            "on-tertiary-container": "#bdffdb",
+            "error": "#ffb4ab",
+            "error-container": "#93000a",
+            "outline": "#8d90a0",
+            "outline-variant": "#434655",
+            "on-surface": "#dae2fd",
+            "on-surface-variant": "#c3c6d7",
+            "on-background": "#dae2fd"
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "sans-serif"]
+          },
+          spacing: {
+            "gutter-lg": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2rem",
+            "space-2xl": "3rem"
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b1326; }
+    ::-webkit-scrollbar-thumb { background: #222a3d; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #2d3449; }
+
+    @media print {
+      aside, header, #printExcludeBar, .no-print { display: none !important; }
+      .pl-64 { padding-left: 0 !important; }
+      body, main { background: #ffffff !important; color: #000000 !important; }
+      .bg-surface-container-low, .bg-surface-container, .bg-surface-container-lowest {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+      }
+      .text-on-surface { color: #0f172a !important; }
+      .text-on-surface-variant { color: #475569 !important; }
+      .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-background font-sans text-on-surface antialiased">
+
+  <!-- ===================================================================== -->
+  <!-- 1. BARRA LATERAL FIXA (SIDEBAR DE NAVEGAÇÃO SPA)                      -->
+  <!-- ===================================================================== -->
+  <aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest z-50 flex flex-col justify-between p-space-md shadow-[0_1px_8px_rgba(0,0,0,0.4)] border-r border-surface-container-high/40">
+    <div class="flex flex-col gap-space-xl">
+      <!-- LOGO -->
+      <div class="flex items-center gap-space-sm px-space-xs pt-space-xs cursor-pointer" onclick="navigateTo('ao-vivo')">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-container to-tertiary flex items-center justify-center text-white shadow-md">
+          <span class="material-symbols-outlined text-xl">sensors</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-base text-primary font-bold tracking-tight leading-none">IG Live Captura</span>
+          <span class="text-[11px] text-tertiary font-semibold uppercase tracking-wider mt-0.5">Stream Commerce Pro</span>
+        </div>
+      </div>
+
+      <!-- BOTÕES DE NAVEGAÇÃO SPA (4 TELAS UNIFICADAS) -->
+      <nav class="flex flex-col gap-1.5" id="sidebarNav">
+        <button onclick="navigateTo('ao-vivo')" data-nav="ao-vivo" class="nav-item w-full flex items-center gap-space-sm px-space-md py-2.5 rounded-lg font-semibold text-sm transition-all bg-primary-container text-on-primary-container shadow-sm text-left">
+          <span class="material-symbols-outlined text-secondary">sensors</span>
+          <span>Ao Vivo</span>
+        </button>
+        <button onclick="navigateTo('historico')" data-nav="historico" class="nav-item w-full flex items-center gap-space-sm px-space-md py-2.5 rounded-lg font-medium text-sm transition-all text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface text-left">
+          <span class="material-symbols-outlined">folder_open</span>
+          <span>Histórico de Lives</span>
+        </button>
+        <button onclick="navigateTo('gatilhos')" data-nav="gatilhos" class="nav-item w-full flex items-center gap-space-sm px-space-md py-2.5 rounded-lg font-medium text-sm transition-all text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface text-left">
+          <span class="material-symbols-outlined">tune</span>
+          <span>Gatilhos e Palavras</span>
+        </button>
+        <button onclick="navigateTo('relatorios')" data-nav="relatorios" class="nav-item w-full flex items-center gap-space-sm px-space-md py-2.5 rounded-lg font-medium text-sm transition-all text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface text-left">
+          <span class="material-symbols-outlined">insights</span>
+          <span>Relatórios & BI</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- PAINEL DE PERFIL E STATUS DO USUÁRIO -->
+    <div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-space-md border border-surface-container-high/40">
+      <div class="flex items-center gap-space-sm">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-tertiary flex items-center justify-center text-surface font-bold text-xs">
+          MC
+        </div>
+        <div class="flex flex-col overflow-hidden">
+          <span class="text-xs font-semibold text-on-surface truncate">Mariana Costa</span>
+          <span class="text-[10px] text-tertiary font-medium">Operador Master • Pro</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-[11px] text-on-surface-variant px-1 border-t border-surface-container-high/40 pt-2">
+        <span>Status Sistema</span>
+        <span class="text-tertiary font-bold flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span> Online
+        </span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================================================================== -->
+  <!-- 2. CONTEÚDO PRINCIPAL (ÁREA DESLIZANTE COM HEADER FIXO)               -->
+  <!-- ===================================================================== -->
+  <div class="pl-64 min-h-screen flex flex-col">
+    <!-- CABEÇALHO GLOBAL -->
+    <header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl z-40 px-gutter-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.25)] border-b border-surface-container-high/40 no-print">
+      
+      <!-- BREADCRUMB / TÍTULO DA VISÃO ATUAL -->
+      <div class="flex items-center gap-space-md">
+        <div class="flex items-center gap-2">
+          <span id="headerIcon" class="material-symbols-outlined text-primary text-2xl">sensors</span>
+          <div>
+            <h1 id="headerTitle" class="text-base font-bold text-on-surface leading-none">Painel de Captura Ao Vivo</h1>
+            <p id="headerSubtitle" class="text-[11px] text-on-surface-variant mt-0.5">Transmissão em tempo real • Instagram Live Commerce</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÕES DE CONTROLE GLOBAIS NO HEADER -->
+      <div class="flex items-center gap-space-md">
+        <!-- BOTÃO DE ÁUDIO (CHIME SINTETIZADOR) -->
+        <button id="btnToggleAudio" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high text-xs font-semibold text-tertiary hover:bg-surface-container-highest transition-colors border border-surface-container-highest" title="Ativar/Desativar alerta sonoro de novas compras">
+          <span id="audioIcon" class="material-symbols-outlined text-sm">volume_up</span>
+          <span id="audioStateText">Som Ativo</span>
+        </button>
+
+        <!-- ATALHO PARA O SIMULADOR DE LIVE -->
+        <a href="simulador_live_instagram.html" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container text-on-primary-container text-xs font-bold hover:opacity-90 transition-opacity shadow-sm">
+          <span class="material-symbols-outlined text-sm">smart_display</span>
+          <span>Abrir Simulador</span>
+        </a>
+
+        <!-- BADGE DE STATUS DE REDE -->
+        <div class="flex items-center gap-space-xs bg-surface-container-low px-3 py-1 rounded-full border border-tertiary/20">
+          <span class="material-symbols-outlined text-tertiary text-sm">wifi_tethering</span>
+          <span class="text-[11px] text-tertiary font-bold uppercase">Feed Conectado</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTAINER PRINCIPAL: RENDERIZA A VIEW SELECIONADA -->
+    <main class="w-full pt-20 bg-background flex-1 px-gutter-lg py-space-lg">
+
+      <!-- =================================================================== -->
+      <!-- TELA 1: AO VIVO (VIEW-AO-VIVO)                                      -->
+      <!-- =================================================================== -->
+      <section id="view-ao-vivo" class="view-panel flex flex-col gap-space-lg max-w-7xl mx-auto">
+        <!-- TELEMETRIA SUPERIOR DA LIVE -->
+        <div class="flex flex-col gap-space-md bg-surface-container-low p-space-md lg:p-space-lg rounded-2xl border border-surface-container-high/60 shadow-md">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+            <!-- Meta da Live -->
+            <div class="flex flex-wrap items-center gap-space-sm">
+              <div class="flex items-center gap-space-xs px-3 py-1 rounded-full bg-secondary-container/20 border border-secondary/30 shadow-[0_0_12px_rgba(239,68,68,0.25)]">
+                <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                <span class="text-xs text-secondary uppercase font-bold tracking-wider">AO VIVO</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-on-surface font-semibold text-sm">
+                <span class="material-symbols-outlined text-primary text-base">photo_camera</span>
+                <span>@lojafashion_oficial</span>
+              </div>
+              <span class="text-outline text-xs">•</span>
+              <div class="flex items-center gap-1 bg-surface-container-highest/60 px-2 py-0.5 rounded text-on-surface-variant text-xs">
+                <span class="material-symbols-outlined text-xs">timer</span>
+                <span class="font-mono font-bold" id="streamTimer">01:24:18</span>
+              </div>
+              <div class="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-tertiary-container/30 text-tertiary text-xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                <span>Buffer 0.4s</span>
+              </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="flex items-center gap-space-sm">
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold transition-all shadow-sm" id="btnPauseCapture">
+                <span class="material-symbols-outlined text-sm text-secondary">pause_circle</span>
+                <span id="pauseLabel">Pausar Captura</span>
+              </button>
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container text-on-primary-container hover:opacity-90 text-xs font-bold transition-all shadow-md" id="btnExportCSV">
+                <span class="material-symbols-outlined text-sm">download</span>
+                <span>Exportar CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Cards de Métricas Rápidas -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md pt-space-xs">
+            <!-- Total de Comentários -->
+            <div class="flex items-center justify-between p-space-md rounded-xl bg-surface-container shadow-sm border border-surface-container-high/40">
+              <div class="flex flex-col">
+                <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Total de Comentários</span>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span id="statCommentsCount" class="text-2xl font-bold text-on-surface">4.892</span>
+                  <span class="text-xs text-tertiary font-semibold flex items-center">
+                    <span class="material-symbols-outlined text-xs">trending_up</span>+14%
+                  </span>
+                </div>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined">forum</span>
+              </div>
+            </div>
+
+            <!-- Espectadores Únicos -->
+            <div class="flex items-center justify-between p-space-md rounded-xl bg-surface-container shadow-sm border border-surface-container-high/40">
+              <div class="flex flex-col">
+                <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Espectadores Únicos</span>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span id="statViewersCount" class="text-2xl font-bold text-on-surface">1.240</span>
+                  <span class="text-xs text-tertiary font-semibold flex items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-tertiary inline-block mr-1 animate-pulse"></span>ativos
+                  </span>
+                </div>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+                <span class="material-symbols-outlined">group</span>
+              </div>
+            </div>
+
+            <!-- Intenções de Compra -->
+            <div class="flex items-center justify-between p-space-md rounded-xl bg-surface-container shadow-sm border border-tertiary/30 relative overflow-hidden">
+              <div class="absolute right-0 top-0 bottom-0 w-1.5 bg-tertiary"></div>
+              <div class="flex flex-col">
+                <span class="text-[11px] font-bold text-tertiary uppercase tracking-wider">Intenções de Compra</span>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span id="statIntentsCount" class="text-2xl font-bold text-tertiary">683</span>
+                  <span class="text-xs text-on-surface-variant">pedidos qualificados</span>
+                </div>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+                <span class="material-symbols-outlined">shopping_cart_checkout</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BARRA DE FILTROS & TERMOS FREQUENTES -->
+        <div class="flex flex-col gap-space-md bg-surface-container-low p-space-md rounded-2xl border border-surface-container-high/60 shadow-sm">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-space-sm items-center">
+            <div class="md:col-span-3 relative flex items-center">
+              <span class="absolute left-3 text-outline text-sm font-bold">@</span>
+              <input id="searchUserInput" type="text" placeholder="Buscar por @usuário..." class="w-full h-10 pl-8 pr-8 rounded-lg bg-surface-container text-on-surface placeholder:text-outline text-xs focus:outline-none focus:bg-surface-container-high transition-colors"/>
+            </div>
+            <div class="md:col-span-5 relative flex items-center">
+              <span class="material-symbols-outlined absolute left-3 text-outline text-sm">sell</span>
+              <input id="searchKeywordInput" type="text" placeholder="Buscar palavra-chave (ex: tamanho M, pix, valor)..." class="w-full h-10 pl-9 pr-3 rounded-lg bg-surface-container text-on-surface placeholder:text-outline text-xs focus:outline-none focus:bg-surface-container-high transition-colors"/>
+            </div>
+            <div class="md:col-span-2 relative flex items-center">
+              <select id="sortSelect" class="w-full h-10 px-3 rounded-lg bg-surface-container text-on-surface text-xs focus:outline-none focus:bg-surface-container-high cursor-pointer">
+                <option value="recentes">Mais recentes</option>
+                <option value="antigos">Mais antigos</option>
+                <option value="alfabetica">Ordem A-Z</option>
+              </select>
+            </div>
+            <div class="md:col-span-2 flex items-center bg-surface-container rounded-lg p-0.5 gap-0.5">
+              <button class="filter-tab flex-1 py-1.5 rounded text-center text-xs font-bold bg-primary-container text-on-primary-container" data-type="all">Todos</button>
+              <button class="filter-tab flex-1 py-1.5 rounded text-center text-xs font-semibold text-on-surface-variant hover:text-on-surface" data-type="intent">QUERO</button>
+              <button class="filter-tab flex-1 py-1.5 rounded text-center text-xs font-semibold text-on-surface-variant hover:text-on-surface" data-type="doubt">Dúvidas</button>
+            </div>
+          </div>
+
+          <!-- Termos Frequentes (Chips) -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-surface-container-high/40">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs text-primary">local_fire_department</span>
+                Termos Mais Citados:
+              </span>
+              <button class="keyword-chip flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary text-xs font-bold" data-keyword="quero">
+                <span>quero</span>
+                <span class="px-1.5 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-mono">412</span>
+              </button>
+              <button class="keyword-chip flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary text-xs font-bold" data-keyword="pix">
+                <span>pix</span>
+                <span class="px-1.5 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-mono">289</span>
+              </button>
+              <button class="keyword-chip flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-highest text-primary text-xs" data-keyword="tamanho M">
+                <span>tamanho M</span>
+                <span class="px-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-[10px] font-mono">174</span>
+              </button>
+              <button class="keyword-chip flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-highest text-primary text-xs" data-keyword="preço">
+                <span>preço</span>
+                <span class="px-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-[10px] font-mono">153</span>
+              </button>
+            </div>
+            <button onclick="navigateTo('gatilhos')" class="text-xs text-primary hover:underline flex items-center gap-1 font-semibold">
+              <span class="material-symbols-outlined text-xs">tune</span>
+              <span>Gerenciar Gatilhos</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ÁREA CENTRAL: FEED DE COMENTÁRIOS (70%) + LISTA DE COMPRADORES (30%) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+          <!-- Feed de Comentários em Tempo Real -->
+          <div class="lg:col-span-8 flex flex-col gap-space-md">
+            <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl border border-surface-container-high/60">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-tertiary animate-pulse"></span>
+                <span class="text-xs font-bold text-on-surface">Capturando comentários em tempo real...</span>
+              </div>
+              <button id="btnAutoScroll" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                <span class="material-symbols-outlined text-xs">vertical_align_bottom</span>
+                <span id="autoScrollText">Rolagem automática: Ativa</span>
+              </button>
+            </div>
+
+            <!-- Lista de cards do feed -->
+            <div id="liveFeedContainer" class="flex flex-col gap-space-sm max-h-[720px] overflow-y-auto pr-1">
+              <!-- Comentário de Exemplo 1 -->
+              <div class="comment-item flex flex-col p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all shadow-sm gap-space-xs border border-tertiary/40" data-time="19:45:12" data-type="intent" data-user="@camila_silva92">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-tertiary flex items-center justify-center text-surface font-bold text-xs ring-2 ring-tertiary">
+                      CS
+                    </div>
+                    <div class="flex flex-col">
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-sm text-on-surface">@camila_silva92</span>
+                        <span class="px-2 py-0.5 rounded-full bg-tertiary-container/30 text-tertiary font-bold text-[10px] uppercase">INTENÇÃO DE COMPRA</span>
+                      </div>
+                      <span class="text-[10px] text-on-surface-variant">Cliente VIP • 3 compras prévias</span>
+                    </div>
+                  </div>
+                  <span class="text-xs text-on-surface-variant font-mono">19:45:12</span>
+                </div>
+                <p class="text-sm text-on-surface font-medium pl-10">
+                  “QUERO O VESTIDO VERMELHO TAMANHO M NO PIX AGORA! Já chamei no direct”
+                </p>
+                <div class="flex items-center justify-between pt-2 mt-1 border-t border-surface-container-high/40 pl-10">
+                  <span class="px-2 py-0.5 rounded bg-tertiary-container/20 text-tertiary text-[10px] font-mono">#PIX</span>
+                  <div class="flex items-center gap-1.5">
+                    <button class="copy-handle-btn px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-highest text-xs text-on-surface flex items-center gap-1" onclick="navigator.clipboard.writeText('@camila_silva92')">
+                      <span class="material-symbols-outlined text-xs">content_copy</span>
+                      <span>Copiar @</span>
+                    </button>
+                    <button class="mark-attended-btn px-2.5 py-1 rounded bg-tertiary-container/20 text-tertiary hover:bg-tertiary-container/40 text-xs font-semibold">
+                      Atendido
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Comentário de Exemplo 2 -->
+              <div class="comment-item flex flex-col p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all shadow-sm gap-space-xs" data-time="19:45:08" data-type="intent" data-user="@anapaula_modas">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-secondary to-primary flex items-center justify-center text-surface font-bold text-xs ring-2 ring-tertiary">
+                      AP
+                    </div>
+                    <div class="flex flex-col">
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-sm text-on-surface">@anapaula_modas</span>
+                        <span class="px-2 py-0.5 rounded-full bg-tertiary-container/30 text-tertiary font-bold text-[10px] uppercase">COMPROVANTE ENVIADO</span>
+                      </div>
+                      <span class="text-[10px] text-on-surface-variant">Comprador Ativo</span>
+                    </div>
+                  </div>
+                  <span class="text-xs text-on-surface-variant font-mono">19:45:08</span>
+                </div>
+                <p class="text-sm text-on-surface font-medium pl-10">
+                  “PAGUEI O PIX!! Mandei o comprovante no direct agora mesmo @lojafashion_oficial”
+                </p>
+                <div class="flex items-center justify-between pt-2 mt-1 border-t border-surface-container-high/40 pl-10">
+                  <span class="px-2 py-0.5 rounded bg-surface-container-highest text-primary text-[10px] font-mono">#comprovante</span>
+                  <div class="flex items-center gap-1.5">
+                    <button class="copy-handle-btn px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-highest text-xs text-on-surface flex items-center gap-1" onclick="navigator.clipboard.writeText('@anapaula_modas')">
+                      <span class="material-symbols-outlined text-xs">content_copy</span>
+                      <span>Copiar @</span>
+                    </button>
+                    <button class="mark-attended-btn px-2.5 py-1 rounded bg-tertiary-container/20 text-tertiary hover:bg-tertiary-container/40 text-xs font-semibold">
+                      Atendido
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coluna Lateral de Compradores (30%) -->
+          <div class="lg:col-span-4 flex flex-col gap-space-md">
+            <div class="p-space-md rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex flex-col gap-3">
+              <div class="flex items-center justify-between border-b border-surface-container-high/40 pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-tertiary text-lg">shopping_basket</span>
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-on-surface">Fila de Compradores</h3>
+                </div>
+                <button id="btnCopyAllBuyers" class="px-3 py-1 rounded-lg bg-primary-container text-white text-xs font-bold hover:opacity-90 transition-all flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">content_copy</span>
+                  <span>Copiar Todos</span>
+                </button>
+              </div>
+
+              <div id="buyersQueueList" class="flex flex-col gap-2 max-h-[500px] overflow-y-auto">
+                <div class="p-2.5 rounded-lg bg-surface-container flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center font-bold text-[10px]">@</div>
+                    <span class="font-bold text-on-surface">@camila_silva92</span>
+                  </div>
+                  <span class="text-[10px] text-tertiary font-mono font-bold">PIX • M</span>
+                </div>
+                <div class="p-2.5 rounded-lg bg-surface-container flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center font-bold text-[10px]">@</div>
+                    <span class="font-bold text-on-surface">@anapaula_modas</span>
+                  </div>
+                  <span class="text-[10px] text-tertiary font-mono font-bold">Pago</span>
+                </div>
+                <div class="p-2.5 rounded-lg bg-surface-container flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-[10px]">@</div>
+                    <span class="font-bold text-on-surface">@beatriz_oliveira</span>
+                  </div>
+                  <span class="text-[10px] text-primary font-mono font-bold">Blazer M</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TELA 2: HISTÓRICO DE LIVES (VIEW-HISTORICO)                         -->
+      <!-- =================================================================== -->
+      <section id="view-historico" class="view-panel hidden flex flex-col gap-space-lg max-w-7xl mx-auto">
+        <!-- SCORECARD HISTÓRICO -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
+          <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex flex-col justify-between">
+            <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Lives Gravadas</span>
+            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">14</span><span class="text-[11px] text-tertiary ml-1">sessões</span></div>
+          </div>
+          <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex flex-col justify-between">
+            <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Comentários Salvos</span>
+            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">42.890</span><span class="text-[11px] text-on-surface-variant ml-1">capturados</span></div>
+          </div>
+          <div class="p-space-md rounded-xl bg-surface-container-low border border-tertiary/30 shadow-sm flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute right-0 top-0 bottom-0 w-1 bg-tertiary"></div>
+            <span class="text-xs uppercase font-bold tracking-wider text-tertiary">Intenções QUERO/PIX</span>
+            <div class="mt-2"><span class="text-2xl font-bold text-tertiary">5.940</span><span class="text-[11px] text-tertiary ml-1 font-semibold">pedidos</span></div>
+          </div>
+          <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex flex-col justify-between">
+            <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Compradores Únicos</span>
+            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">2.418</span><span class="text-[11px] text-on-surface-variant ml-1">clientes</span></div>
+          </div>
+          <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex flex-col justify-between">
+            <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Faturamento Estimado</span>
+            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">R$ 412k</span><span class="text-[11px] text-tertiary ml-1 font-semibold">+18% m/m</span></div>
+          </div>
+        </div>
+
+        <!-- FILTROS DO HISTÓRICO -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-space-md p-space-md bg-surface-container-low rounded-xl border border-surface-container-high/60 shadow-sm">
+          <div class="flex-1 flex items-center gap-space-sm">
+            <div class="relative flex-1 max-w-md">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-lg">search</span>
+              <input id="inputSearchLive" type="text" placeholder="Buscar por título, data ou @perfil..." class="w-full h-10 pl-10 pr-4 rounded-lg bg-surface-container text-on-surface text-xs focus:outline-none focus:border-primary transition-colors"/>
+            </div>
+            <select id="selectPeriod" class="h-10 px-3 rounded-lg bg-surface-container text-on-surface text-xs border border-surface-container-high focus:outline-none cursor-pointer">
+              <option value="all">Todas as Datas</option>
+              <option value="7d">Últimos 7 dias</option>
+              <option value="30d">Últimos 30 dias</option>
+            </select>
+          </div>
+          <button id="btnExportAllCsv" class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-semibold">
+            <span class="material-symbols-outlined text-sm">download</span>
+            <span>Exportar Histórico Completo (CSV)</span>
+          </button>
+        </div>
+
+        <!-- TABELA DE LIVES -->
+        <div class="bg-surface-container-low rounded-2xl border border-surface-container-high/60 shadow-sm overflow-hidden">
+          <div class="px-space-lg py-space-md border-b border-surface-container-high/60 flex items-center justify-between">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-base">view_list</span>
+              Sessões Gravadas no Banco de Dados
+            </h2>
+            <span id="liveCounterBadge" class="text-xs text-on-surface-variant font-medium">6 lives</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="bg-surface-container-lowest/80 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant border-b border-surface-container-high/60">
+                  <th class="py-3 px-space-lg">Live / Perfil</th>
+                  <th class="py-3 px-space-md">Data & Duração</th>
+                  <th class="py-3 px-space-md text-right">Comentários</th>
+                  <th class="py-3 px-space-md text-right">Intenções QUERO</th>
+                  <th class="py-3 px-space-md text-right">Compradores</th>
+                  <th class="py-3 px-space-md text-center">Status</th>
+                  <th class="py-3 px-space-lg text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="livesTableBody" class="divide-y divide-surface-container-high/40">
+                <!-- Inserido dinamicamente via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TELA 3: GATILHOS E PALAVRAS (VIEW-GATILHOS)                         -->
+      <!-- =================================================================== -->
+      <section id="view-gatilhos" class="view-panel hidden flex flex-col gap-space-lg max-w-7xl mx-auto">
+        <!-- SIMULADOR INTERATIVO DE GATILHOS -->
+        <div class="p-space-lg rounded-2xl bg-gradient-to-r from-surface-container-low via-surface-container to-surface-container-low border border-primary/20 shadow-lg">
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-primary-container/30 text-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-lg">science</span>
+              </div>
+              <div>
+                <h2 class="text-sm font-bold text-on-surface">Testador de Gatilhos em Tempo Real</h2>
+                <p class="text-[11px] text-on-surface-variant">Digite um comentário de exemplo para verificar o acionamento de alertas e som</p>
+              </div>
+            </div>
+            <button id="btnPlaySampleChime" class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-semibold">
+              <span class="material-symbols-outlined text-sm">volume_up</span>
+              <span>Testar Som de Compra</span>
+            </button>
+          </div>
+
+          <div class="relative">
+            <input id="inputTestPhrase" type="text" value="QUERO o blazer azul no pix tamanho M, manda o direct!" class="w-full h-12 pl-4 pr-24 rounded-xl bg-surface-container-lowest text-on-surface text-sm border border-surface-container-high focus:outline-none focus:border-primary"/>
+            <button id="btnClearTest" class="absolute right-2.5 top-2.5 px-3 py-1 rounded-lg bg-surface-container-high text-xs text-on-surface-variant">Limpar</button>
+          </div>
+
+          <div class="mt-3 p-3 rounded-xl bg-surface-container-lowest/80 border border-surface-container-high flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs font-bold text-on-surface-variant uppercase">Gatilhos Detectados:</span>
+              <div id="detectedChipsContainer" class="flex flex-wrap gap-1.5"></div>
+            </div>
+            <div id="testActionBadge" class="flex items-center gap-1 text-xs text-tertiary font-semibold bg-tertiary-container/20 px-3 py-1 rounded-full border border-tertiary/30">
+              Ação: Alerta Sonoro + Comprador Qualificado
+            </div>
+          </div>
+        </div>
+
+        <!-- BARRA DE CATEGORIAS E NOVO GATILHO -->
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-surface-container-high/60 pb-3">
+          <div class="flex flex-wrap gap-2">
+            <button class="cat-btn active-cat px-3 py-1.5 rounded-lg bg-primary-container text-on-primary-container text-xs font-bold" data-category="all">Todas</button>
+            <button class="cat-btn px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant text-xs font-bold" data-category="intent">🟢 Intenção de Compra</button>
+            <button class="cat-btn px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant text-xs font-bold" data-category="doubt">🔵 Dúvidas</button>
+            <button class="cat-btn px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant text-xs font-bold" data-category="paid">🟣 Comprovantes</button>
+            <button class="cat-btn px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant text-xs font-bold" data-category="moderation">🔴 Moderação</button>
+          </div>
+          <button id="btnOpenNewTriggerModal" class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary-container text-on-primary-container text-xs font-bold hover:opacity-90 shadow-md">
+            <span class="material-symbols-outlined text-sm">add_circle</span>
+            <span>Adicionar Novo Gatilho</span>
+          </button>
+        </div>
+
+        <!-- GRID DE GATILHOS -->
+        <div id="triggersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-md">
+          <!-- Inserido dinamicamente via JS -->
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TELA 4: RELATÓRIOS & BI (VIEW-RELATORIOS)                           -->
+      <!-- =================================================================== -->
+      <section id="view-relatorios" class="view-panel hidden flex flex-col gap-space-lg max-w-7xl mx-auto">
+        <!-- SCORECARD EXECUTIVO -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+          <div class="p-space-lg rounded-2xl bg-surface-container-low border border-tertiary/30 shadow-md relative overflow-hidden">
+            <div class="absolute right-0 top-0 bottom-0 w-1.5 bg-tertiary"></div>
+            <span class="text-xs uppercase font-bold tracking-wider text-tertiary">Faturamento Estimado</span>
+            <div class="mt-2">
+              <span class="text-3xl font-bold text-tertiary">R$ 84.620</span>
+              <p class="text-xs text-tertiary font-semibold mt-1">+22.4% vs live anterior</p>
+            </div>
+          </div>
+          <div class="p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md">
+            <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Taxa de Conversão</span>
+            <div class="mt-2">
+              <span class="text-3xl font-bold text-on-surface">13.9%</span>
+              <p class="text-xs text-primary font-semibold mt-1">683 pedidos de 4.892 comments</p>
+            </div>
+          </div>
+          <div class="p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md">
+            <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Ticket Médio</span>
+            <div class="mt-2">
+              <span class="text-3xl font-bold text-on-surface">R$ 123,80</span>
+              <p class="text-xs text-on-surface-variant mt-1">por comprador qualificado</p>
+            </div>
+          </div>
+          <div class="p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md">
+            <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Tempo de Resposta</span>
+            <div class="mt-2">
+              <span class="text-3xl font-bold text-on-surface">18s</span>
+              <p class="text-xs text-tertiary font-semibold mt-1">Velocidade no checkout</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRÁFICOS: EVOLUÇÃO TEMPORAL + DONUT -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+          <div class="lg:col-span-8 p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">show_chart</span>
+                <span>Evolução Temporal • Comentários x Intenções de Compra</span>
+              </h3>
+            </div>
+            <div class="relative w-full h-72">
+              <canvas id="chartTimeline"></canvas>
+            </div>
+          </div>
+
+          <div class="lg:col-span-4 p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md flex flex-col">
+            <h3 class="text-sm font-bold text-on-surface mb-2 flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary text-base">pie_chart</span>
+              <span>Divisão dos Comentários</span>
+            </h3>
+            <div class="relative w-full h-56 flex items-center justify-center">
+              <canvas id="chartCategories"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- FUNIL + PRODUTOS MAIS VENDIDOS -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+          <div class="lg:col-span-5 p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md flex flex-col justify-between">
+            <h3 class="text-sm font-bold text-on-surface mb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-tertiary text-base">filter_alt</span>
+              <span>Funil de Conversão Comercial</span>
+            </h3>
+            <div class="flex flex-col gap-3">
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1"><span>1. Espectadores</span><span>1.240 (100%)</span></div>
+                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full w-full"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1"><span>2. Comentaram</span><span>892 (71.9%)</span></div>
+                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary-container rounded-full" style="width: 71.9%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1 text-tertiary"><span>3. Intenção QUERO</span><span>683 (55.0%)</span></div>
+                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-tertiary rounded-full" style="width: 55%"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1 text-tertiary"><span>4. Confirmação / Direct</span><span>412 (33.2%)</span></div>
+                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-tertiary rounded-full" style="width: 33.2%"></div></div>
+              </div>
+            </div>
+            <div class="mt-4 p-3 rounded-xl bg-tertiary-container/15 border border-tertiary/30 text-xs">
+              <strong>Alta Retenção:</strong> 1 de cada 3 pessoas que comentaram iniciou o checkout.
+            </div>
+          </div>
+
+          <div class="lg:col-span-7 p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md flex flex-col">
+            <h3 class="text-sm font-bold text-on-surface mb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-base">leaderboard</span>
+              <span>Top 5 Peças Mais Disputadas</span>
+            </h3>
+            <div class="relative w-full h-64">
+              <canvas id="chartTopProducts"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- AÇÕES DE EXPORTAÇÃO DO RELATÓRIO -->
+        <div class="flex items-center justify-between p-space-md rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-sm no-print">
+          <span class="text-xs text-on-surface-variant">Gere um documento executivo para a equipe ou lojista parceiro</span>
+          <div class="flex items-center gap-2">
+            <button onclick="window.print()" class="px-4 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-xs font-bold text-on-surface flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">print</span>
+              <span>Imprimir / Gerar PDF</span>
+            </button>
+            <button id="btnExportReportSummaryCsv" class="px-4 py-2 rounded-lg bg-primary-container text-on-primary-container text-xs font-bold hover:opacity-90 flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">download</span>
+              <span>Exportar Planilha Completa</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 3. MODAIS GLOBAIS (DETALHES DA LIVE & CADASTRO DE GATILHO)            -->
+  <!-- ===================================================================== -->
+
+  <!-- MODAL: DETALHES DA LIVE -->
+  <div id="liveDetailModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-low border border-surface-container-high rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden">
+      <div class="px-space-lg py-space-md bg-surface-container-lowest border-b border-surface-container-high flex items-center justify-between">
+        <div>
+          <h3 id="modalLiveTitle" class="text-base font-bold text-on-surface">Detalhes da Transmissão</h3>
+          <p id="modalLiveMeta" class="text-xs text-on-surface-variant mt-0.5"></p>
+        </div>
+        <button onclick="document.getElementById('liveDetailModal').classList.add('hidden')" class="p-1 rounded-lg text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div id="modalCommentsList" class="p-space-lg max-h-96 overflow-y-auto flex flex-col gap-2"></div>
+      <div class="px-space-lg py-space-md bg-surface-container-lowest border-t border-surface-container-high flex justify-end">
+        <button onclick="document.getElementById('liveDetailModal').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-surface-container-high text-xs font-bold text-on-surface">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVO GATILHO -->
+  <div id="newTriggerModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-low border border-surface-container-high rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+      <div class="px-space-lg py-space-md bg-surface-container-lowest border-b border-surface-container-high flex items-center justify-between">
+        <h3 class="text-base font-bold text-on-surface flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-base">add_circle</span>
+          Cadastrar Novo Gatilho
+        </h3>
+        <button onclick="document.getElementById('newTriggerModal').classList.add('hidden')" class="p-1 text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="formNewTrigger" class="p-space-lg flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold uppercase text-on-surface">Palavra ou Expressão</label>
+          <input id="newTriggerWord" type="text" required placeholder="Ex: quero, vou levar, pix" class="h-10 px-3 rounded-lg bg-surface-container text-xs text-on-surface border border-surface-container-high focus:outline-none focus:border-primary"/>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold uppercase text-on-surface">Categoria</label>
+          <select id="newTriggerCategory" class="h-10 px-3 rounded-lg bg-surface-container text-xs text-on-surface border border-surface-container-high focus:outline-none cursor-pointer">
+            <option value="intent">🟢 Intenção de Compra (QUERO / PIX)</option>
+            <option value="doubt">🔵 Dúvidas & Suporte (TAMANHO / VALOR)</option>
+            <option value="paid">🟣 Pagamento & Comprovante</option>
+            <option value="moderation">🔴 Moderação & Filtro</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t border-surface-container-high">
+          <button type="button" onclick="document.getElementById('newTriggerModal').classList.add('hidden')" class="px-4 py-2 rounded-lg bg-surface-container text-xs font-bold text-on-surface-variant">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-primary-container text-on-primary-container text-xs font-bold hover:opacity-90">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 4. CONTROLLER SPA E SCRIPT GERAL UNIFICADO                            -->
+  <!-- ===================================================================== -->
+  <script>
+    // -----------------------------------------------------------------------
+    // ROTEADOR SPA (SINGLE PAGE APPLICATION)
+    // -----------------------------------------------------------------------
+    const VIEW_TITLES = {
+      "ao-vivo": { title: "Painel de Captura Ao Vivo", subtitle: "Transmissão em tempo real • Instagram Live Commerce", icon: "sensors" },
+      "historico": { title: "Histórico de Transmissões", subtitle: "Sessões gravadas, métricas acumuladas e exportação", icon: "folder_open" },
+      "gatilhos": { title: "Gatilhos & Reconhecimento de Palavras", subtitle: "Configure palavras de compra, alertas sonoros e automações", icon: "tune" },
+      "relatorios": { title: "Relatórios & Inteligência de Vendas", subtitle: "Análise de conversão, ranking de produtos e clientes VIP", icon: "insights" }
+    };
+
+    let chartsInitialized = false;
+
+    function navigateTo(viewId) {
+      if (!VIEW_TITLES[viewId]) viewId = "ao-vivo";
+
+      // Alterna exibição das telas
+      document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
+      const activePanel = document.getElementById('view-' + viewId);
+      if (activePanel) activePanel.classList.remove('hidden');
+
+      // Atualiza menu lateral
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        const target = btn.getAttribute('data-nav');
+        if (target === viewId) {
+          btn.className = "nav-item w-full flex items-center gap-space-sm px-space-md py-2.5 rounded-lg font-semibold text-sm transition-all bg-primary-container text-on-primary-container shadow-sm text-left";
+        } else {
+          btn.className = "nav-item w-full flex items-center gap-space-sm px-space-md py-2.5 rounded-lg font-medium text-sm transition-all text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface text-left";
+        }
+      });
+
+      // Atualiza cabeçalho
+      const meta = VIEW_TITLES[viewId];
+      document.getElementById('headerTitle').textContent = meta.title;
+      document.getElementById('headerSubtitle').textContent = meta.subtitle;
+      document.getElementById('headerIcon').textContent = meta.icon;
+
+      // Atualiza hash da URL para permitir salvar nos favoritos
+      window.location.hash = '#' + viewId;
+
+      // Inicializa gráficos caso vá para relatórios
+      if (viewId === 'relatorios' && !chartsInitialized) {
+        initCharts();
+        chartsInitialized = true;
+      }
+    }
+
+    // Carrega view baseada no hash da URL ao abrir
+    window.addEventListener('load', () => {
+      const hash = window.location.hash.replace('#', '');
+      navigateTo(hash || 'ao-vivo');
+    });
+
+    // -----------------------------------------------------------------------
+    // SINTETIZADOR DE ÁUDIO WEB AUDIO API (ALERTA SONORO DE COMPRA)
+    // -----------------------------------------------------------------------
+    let audioEnabled = true;
+    let audioCtx = null;
+
+    function playChime() {
+      if (!audioEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const now = audioCtx.currentTime;
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, now); // D5
+        gain1.gain.setValueAtTime(0.12, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.3);
+
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880, now + 0.08); // A5
+        gain2.gain.setValueAtTime(0.18, now + 0.08);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(now + 0.08);
+        osc2.stop(now + 0.45);
+      } catch(e) {}
+    }
+
+    const btnToggleAudio = document.getElementById('btnToggleAudio');
+    if (btnToggleAudio) {
+      btnToggleAudio.addEventListener('click', () => {
+        audioEnabled = !audioEnabled;
+        const icon = document.getElementById('audioIcon');
+        const text = document.getElementById('audioStateText');
+        if (audioEnabled) {
+          icon.textContent = 'volume_up';
+          text.textContent = 'Som Ativo';
+          btnToggleAudio.classList.remove('text-on-surface-variant');
+          btnToggleAudio.classList.add('text-tertiary');
+          playChime();
+        } else {
+          icon.textContent = 'volume_off';
+          text.textContent = 'Mudo';
+          btnToggleAudio.classList.remove('text-tertiary');
+          btnToggleAudio.classList.add('text-on-surface-variant');
+        }
+      });
+    }
+
+    const btnPlaySampleChime = document.getElementById('btnPlaySampleChime');
+    if (btnPlaySampleChime) btnPlaySampleChime.addEventListener('click', playChime);
+
+    // -----------------------------------------------------------------------
+    // SINCRONIZAÇÃO EM TEMPO REAL VIA BROADCASTCHANNEL E STORAGE
+    // -----------------------------------------------------------------------
+    let liveCommentsCount = 4892;
+    let liveIntentsCount = 683;
+    const feedContainer = document.getElementById('liveFeedContainer');
+    const buyersQueueList = document.getElementById('buyersQueueList');
+    let autoScrollActive = true;
+
+    function handleNewLiveComment(data) {
+      if (!data || !data.text) return;
+      const text = data.text;
+      const username = data.username.startsWith('@') ? data.username : '@' + data.username;
+      const time = new Date().toLocaleTimeString('pt-BR');
+      const lower = text.toLowerCase();
+
+      const isIntent = lower.includes('quero') || lower.includes('pix') || lower.includes('comprar') || lower.includes('leva') || lower.includes('minha');
+
+      liveCommentsCount++;
+      document.getElementById('statCommentsCount').textContent = liveCommentsCount.toLocaleString('pt-BR');
+
+      if (isIntent) {
+        liveIntentsCount++;
+        document.getElementById('statIntentsCount').textContent = liveIntentsCount.toLocaleString('pt-BR');
+        playChime();
+
+        // Adiciona à lista lateral de compradores se novo
+        if (buyersQueueList) {
+          const item = document.createElement('div');
+          item.className = "p-2.5 rounded-lg bg-surface-container flex items-center justify-between text-xs animate-in fade-in";
+          item.innerHTML = `
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center font-bold text-[10px]">@</div>
+              <span class="font-bold text-on-surface">${username}</span>
+            </div>
+            <span class="text-[10px] text-tertiary font-mono font-bold">Ao Vivo</span>
+          `;
+          buyersQueueList.prepend(item);
+        }
+      }
+
+      // Adiciona card no topo do feed
+      if (feedContainer) {
+        const card = document.createElement('div');
+        card.className = `comment-item flex flex-col p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all shadow-sm gap-space-xs animate-in fade-in slide-in-from-top-2 duration-300 ${isIntent ? 'border border-tertiary/40' : ''}`;
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-space-sm">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-tertiary flex items-center justify-center text-surface font-bold text-xs ring-2 ${isIntent ? 'ring-tertiary' : 'ring-primary/20'}">
+                @
+              </div>
+              <div class="flex flex-col">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold text-sm text-on-surface">${username}</span>
+                  ${isIntent ? '<span class="px-2 py-0.5 rounded-full bg-tertiary-container/30 text-tertiary font-bold text-[10px] uppercase">INTENÇÃO DE COMPRA</span>' : ''}
+                </div>
+                <span class="text-[10px] text-on-surface-variant">Comentou agora</span>
+              </div>
+            </div>
+            <span class="text-xs text-on-surface-variant font-mono">${time}</span>
+          </div>
+          <p class="text-sm text-on-surface font-medium pl-10">${text}</p>
+        `;
+        feedContainer.prepend(card);
+        if (autoScrollActive) feedContainer.scrollTop = 0;
+      }
+    }
+
+    try {
+      const bc = new BroadcastChannel('ig_live_stream');
+      bc.onmessage = (e) => {
+        if (e.data && e.data.type === 'NEW_COMMENT' && e.data.comment) {
+          handleNewLiveComment(e.data.comment);
+        }
+      };
+    } catch(e) {}
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'ig_live_last_comment' && e.newValue) {
+        try { handleNewLiveComment(JSON.parse(e.newValue)); } catch(err) {}
+      }
+    });
+
+    // -----------------------------------------------------------------------
+    // GATILHOS E PALAVRAS: LÓGICA & SIMULADOR DE FRASE
+    // -----------------------------------------------------------------------
+    const DEFAULT_TRIGGERS = [
+      { id: "1", word: "quero", category: "intent", active: true, count: 412 },
+      { id: "2", word: "pix", category: "intent", active: true, count: 289 },
+      { id: "3", word: "vou levar", category: "intent", active: true, count: 94 },
+      { id: "4", word: "tamanho m", category: "doubt", active: true, count: 174 },
+      { id: "5", word: "preço", category: "doubt", active: true, count: 153 },
+      { id: "6", word: "paguei", category: "paid", active: true, count: 124 },
+      { id: "7", word: "comprovante", category: "paid", active: true, count: 98 },
+      { id: "8", word: "golpe", category: "moderation", active: true, count: 2 }
+    ];
+
+    let currentTriggers = DEFAULT_TRIGGERS;
+
+    function renderTriggers() {
+      const grid = document.getElementById('triggersGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      currentTriggers.forEach(t => {
+        const card = document.createElement('div');
+        card.className = "p-4 rounded-xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex items-center justify-between";
+        card.innerHTML = `
+          <div class="flex flex-col">
+            <span class="font-bold text-sm text-on-surface font-mono">"${t.word}"</span>
+            <span class="text-[10px] text-tertiary font-semibold uppercase mt-0.5">${t.category}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-on-surface-variant font-mono">${t.count}x</span>
+            <button class="text-on-surface-variant hover:text-error p-1" onclick="deleteTrigger('${t.id}')">
+              <span class="material-symbols-outlined text-sm">delete</span>
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function deleteTrigger(id) {
+      currentTriggers = currentTriggers.filter(t => t.id !== id);
+      renderTriggers();
+    }
+
+    const inputTest = document.getElementById('inputTestPhrase');
+    function runPhraseTest() {
+      const val = (inputTest ? inputTest.value : '').toLowerCase();
+      const container = document.getElementById('detectedChipsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      currentTriggers.forEach(t => {
+        if (val.includes(t.word.toLowerCase())) {
+          const chip = document.createElement('span');
+          chip.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-tertiary-container/30 text-tertiary border border-tertiary/30";
+          chip.textContent = '#' + t.word;
+          container.appendChild(chip);
+        }
+      });
+    }
+
+    if (inputTest) inputTest.addEventListener('input', runPhraseTest);
+    renderTriggers();
+    runPhraseTest();
+
+    // Modal de Novo Gatilho
+    const btnOpenTrg = document.getElementById('btnOpenNewTriggerModal');
+    if (btnOpenTrg) btnOpenTrg.addEventListener('click', () => document.getElementById('newTriggerModal').classList.remove('hidden'));
+
+    const formTrg = document.getElementById('formNewTrigger');
+    if (formTrg) {
+      formTrg.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const word = document.getElementById('newTriggerWord').value.trim();
+        const category = document.getElementById('newTriggerCategory').value;
+        if (!word) return;
+        currentTriggers.unshift({ id: String(Date.now()), word: word.toLowerCase(), category, active: true, count: 0 });
+        renderTriggers();
+        runPhraseTest();
+        formTrg.reset();
+        document.getElementById('newTriggerModal').classList.add('hidden');
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // HISTÓRICO: RENDERIZAÇÃO DA TABELA DE LIVES PASSADAS
+    // -----------------------------------------------------------------------
+    const SAMPLE_LIVES = [
+      { id: "1", title: "Coleção Primavera • Lançamento Exclusivo", date: "17/09/2026", dur: "01h 45m", comments: 4892, intents: 683, buyers: 412, status: "ao_vivo" },
+      { id: "2", title: "Mega Bazar Relâmpago • Descontos até 50%", date: "14/09/2026", dur: "02h 15m", comments: 7420, intents: 914, buyers: 580, status: "concluida" },
+      { id: "3", title: "Noite do Vestido de Festa • Especial", date: "10/09/2026", dur: "01h 30m", comments: 3910, intents: 520, buyers: 310, status: "concluida" },
+      { id: "4", title: "Acessórios & Bolsas em Couro", date: "05/09/2026", dur: "01h 20m", comments: 2840, intents: 390, buyers: 245, status: "concluida" }
+    ];
+
+    function renderHistoryTable() {
+      const tbody = document.getElementById('livesTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      SAMPLE_LIVES.forEach(l => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-surface-container/60 transition-colors";
+        tr.innerHTML = `
+          <td class="py-3 px-space-lg font-bold text-on-surface">${l.title}</td>
+          <td class="py-3 px-space-md text-xs text-on-surface-variant">${l.date} (${l.dur})</td>
+          <td class="py-3 px-space-md text-right font-mono font-bold">${l.comments.toLocaleString('pt-BR')}</td>
+          <td class="py-3 px-space-md text-right font-mono font-bold text-tertiary">${l.intents.toLocaleString('pt-BR')}</td>
+          <td class="py-3 px-space-md text-right font-mono">${l.buyers}</td>
+          <td class="py-3 px-space-md text-center">
+            ${l.status === 'ao_vivo' 
+              ? '<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-[10px] font-bold">AO VIVO</span>' 
+              : '<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px]">CONCLUÍDA</span>'}
+          </td>
+          <td class="py-3 px-space-lg text-right">
+            <button onclick="openLiveDetail('${l.id}')" class="px-2.5 py-1 rounded bg-surface-container-high text-xs text-primary hover:bg-surface-highest">Ver</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openLiveDetail(id) {
+      const live = SAMPLE_LIVES.find(l => l.id === id);
+      if (!live) return;
+      document.getElementById('modalLiveTitle').textContent = live.title;
+      document.getElementById('modalLiveMeta').textContent = `${live.date} • Duração: ${live.dur} • ${live.comments} comentários gravados`;
+      
+      const list = document.getElementById('modalCommentsList');
+      list.innerHTML = `
+        <div class="p-3 rounded-lg bg-surface-container text-xs">
+          <span class="font-bold text-primary">@camila_silva92:</span> "QUERO O VESTIDO VERMELHO NO PIX!"
+        </div>
+        <div class="p-3 rounded-lg bg-surface-container text-xs">
+          <span class="font-bold text-primary">@anapaula_modas:</span> "PAGUEI O PIX!! Mandei o comprovante"
+        </div>
+      `;
+      document.getElementById('liveDetailModal').classList.remove('hidden');
+    }
+
+    renderHistoryTable();
+
+    // -----------------------------------------------------------------------
+    // RELATÓRIOS: INICIALIZAÇÃO DOS GRÁFICOS CHART.JS
+    // -----------------------------------------------------------------------
+    function initCharts() {
+      // 1. Linha do Tempo
+      const ctxTimeline = document.getElementById('chartTimeline');
+      if (ctxTimeline) {
+        new Chart(ctxTimeline.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30', '20:45'],
+            datasets: [
+              {
+                label: 'Comentários Totais',
+                data: [320, 580, 890, 1420, 1100, 780, 510, 292],
+                borderColor: '#b4c5ff',
+                backgroundColor: 'rgba(180, 197, 255, 0.1)',
+                fill: true,
+                tension: 0.4
+              },
+              {
+                label: 'Pedidos QUERO/PIX',
+                data: [42, 85, 140, 248, 160, 95, 60, 33],
+                borderColor: '#4edea3',
+                backgroundColor: 'rgba(78, 222, 163, 0.15)',
+                fill: true,
+                tension: 0.4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#c3c6d7' } },
+              y: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#c3c6d7' } }
+            }
+          }
+        });
+      }
+
+      // 2. Donut
+      const ctxDonut = document.getElementById('chartCategories');
+      if (ctxDonut) {
+        new Chart(ctxDonut.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Intenção Compra', 'Dúvidas', 'Comprovantes', 'Outros'],
+            datasets: [{
+              data: [48, 27, 15, 10],
+              backgroundColor: ['#4edea3', '#b4c5ff', '#ffb3ad', '#434655']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+
+      // 3. Barras Produtos
+      const ctxProd = document.getElementById('chartTopProducts');
+      if (ctxProd) {
+        new Chart(ctxProd.getContext('2d'), {
+          type: 'bar',
+          indexAxis: 'y',
+          data: {
+            labels: ['Vestido Vermelho M', 'Blazer Azul', 'Conjunto Linho', 'Bolsa Couro', 'Calça Alfaiataria'],
+            datasets: [{
+              data: [184, 142, 128, 96, 83],
+              backgroundColor: ['#2563eb', '#3b82f6', '#4edea3', '#60a5fa', '#8d90a0'],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#c3c6d7' } },
+              y: { grid: { display: false }, ticks: { color: '#dae2fd' } }
+            }
+          }
+        });
+      }
+    }
+
+    // Botões de Exportação CSV
+    document.querySelectorAll('#btnExportCSV, #btnExportAllCsv, #btnExportReportSummaryCsv').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rows = [
+          ["Usuario", "Horario", "Comentario", "Tipo"],
+          ["@camila_silva92", "19:45:12", "QUERO O VESTIDO VERMELHO NO PIX!", "INTENCAO"],
+          ["@anapaula_modas", "19:45:08", "PAGUEI O PIX!!", "COMPROVANTE"],
+          ["@beatriz_oliveira", "19:44:55", "Eu quero 2 blazers M", "INTENCAO"]
+        ];
+        const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", "live_export.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    });
+
+    // Copiar Todos os Compradores
+    const btnCopyAll = document.getElementById('btnCopyAllBuyers');
+    if (btnCopyAll) {
+      btnCopyAll.addEventListener('click', () => {
+        const text = "@camila_silva92 @anapaula_modas @beatriz_oliveira";
+        navigator.clipboard.writeText(text).then(() => {
+          btnCopyAll.textContent = "Copiados!";
+          setTimeout(() => { btnCopyAll.innerHTML = '<span class="material-symbols-outlined text-xs">content_copy</span><span>Copiar Todos</span>'; }, 1800);
+        });
+      });
+    // -----------------------------------------------------------------------
+    // FIREBASE AUTH & SEGURANÇA EM 4 CAMADAS
+    // -----------------------------------------------------------------------
+    // Cole aqui suas credenciais do Firebase Console (Projeto -> Configurações)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzbe6T0_h1U6fHEp0a5fg5yj1OW2YrVlM",
+      authDomain: "ig-live-commerce.firebaseapp.com",
+      projectId: "ig-live-commerce",
+      storageBucket: "ig-live-commerce.firebasestorage.app",
+      messagingSenderId: "13440694608",
+      appId: "1:13440694608:web:95ac41799dc2ea47ba1455",
+      measurementId: "G-H5MSTXRDFQ"
+    };
+
+    let fbApp = null;
+    let fbAuth = null;
+    let fbDb = null;
+    let unsubscribeKillswitch = null;
+
+    try {
+      if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("_SUA_API_KEY")) {
+        fbApp = firebase.initializeApp(firebaseConfig);
+        fbAuth = firebase.auth();
+        fbDb = firebase.firestore();
+      }
+    } catch(err) {
+      console.warn("Firebase não inicializado com chaves reais:", err);
+    }
+
+    const authOverlay = document.getElementById('authOverlay');
+    const killswitchModal = document.getElementById('killswitchModal');
+    const formLogin = document.getElementById('formLogin');
+    const loginErrorMsg = document.getElementById('loginErrorMsg');
+
+    // Inicialização do fluxo de autenticação
+    if (fbAuth) {
+      fbAuth.onAuthStateChanged(async (user) => {
+        if (user) {
+          // Usuário autenticado: verificar Camada 3 (Vínculo da Chave + Licença no Firestore)
+          try {
+            const userDoc = await fbDb.collection("users").doc(user.uid).get();
+            if (!userDoc.exists) {
+              showLoginError("Conta sem licença vinculada. Solicite liberação ao administrador.");
+              fbAuth.signOut();
+              return;
+            }
+
+            const userData = userDoc.data();
+            const licenseKey = userData.licenseKey;
+
+            // Escuta em tempo real da licença (CAMADA 4: REVOGAÇÃO INSTANTÂNEA / KILLSWITCH)
+            if (unsubscribeKillswitch) unsubscribeKillswitch();
+            unsubscribeKillswitch = fbDb.collection("licenses").doc(licenseKey).onSnapshot((doc) => {
+              if (!doc.exists || doc.data().status !== "active") {
+                // Bloqueio imediato!
+                authOverlay.classList.add('hidden');
+                killswitchModal.classList.remove('hidden');
+                fbAuth.signOut();
+              } else {
+                // Acesso permitido
+                authOverlay.classList.add('hidden');
+                killswitchModal.classList.add('hidden');
+                updateUserProfile(user.email, doc.data().plan || "PRO");
+              }
+            });
+
+          } catch(e) {
+            console.error("Erro ao validar licença:", e);
+            authOverlay.classList.remove('hidden');
+          }
+        } else {
+          // Sem login ativo: Exibe tela de login obrigatória (CAMADA 2)
+          authOverlay.classList.remove('hidden');
+        }
+      });
+
+      if (formLogin) {
+        formLogin.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('loginEmail').value.trim();
+          const pass = document.getElementById('loginPassword').value.trim();
+          loginErrorMsg.classList.add('hidden');
+
+          try {
+            await fbAuth.signInWithEmailAndPassword(email, pass);
+          } catch(err) {
+            showLoginError("E-mail ou senha inválidos. Verifique com o suporte.");
+          }
+        });
+      }
+    } else {
+      // Modo Demonstração Local: exibe banner indicativo suave
+      console.log("Dashboard rodando em Modo Demonstração Local (sem chaves Firebase conectadas).");
+    }
+
+    function showLoginError(msg) {
+      if (loginErrorMsg) {
+        loginErrorMsg.textContent = msg;
+        loginErrorMsg.classList.remove('hidden');
+      }
+    }
+
+    function updateUserProfile(email, plan) {
+      const elEmail = document.getElementById('userProfileEmail');
+      const elPlan = document.getElementById('userProfilePlan');
+      if (elEmail) elEmail.textContent = email;
+      if (elPlan) elPlan.textContent = `Plano ${plan} • Licença Ativa`;
+    }
+
+    function handleLogout() {
+      if (fbAuth) fbAuth.signOut();
+      location.reload();
+    }
+
+    // -----------------------------------------------------------------------
+    // OPÇÃO A: COMUNICAÇÃO DIRETA EXTENSÃO ➔ DASHBOARD (ZERO SERVIDOR)
+    // -----------------------------------------------------------------------
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.type === "IG_LIVE_NEW_COMMENT" && event.data.comment) {
+        handleNewLiveComment(event.data.comment);
+      }
+    });
+
+    if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.onMessageExternal) {
+      chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
+        if (request && request.type === "NEW_COMMENT" && request.comment) {
+          handleNewLiveComment(request.comment);
+          sendResponse({ ok: true });
+        }
+      });
+    }
+  </script>
+
+  <!-- MODAL DE LOGIN FECHADO (CAMADA 2: SEM CADASTRO PÚBLICO) -->
+  <div id="authOverlay" class="fixed inset-0 z-50 bg-background/95 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-low border border-surface-container-high rounded-2xl w-full max-w-md p-space-xl shadow-2xl flex flex-col gap-5">
+      <div class="flex flex-col items-center text-center gap-2">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-container to-tertiary flex items-center justify-center text-white shadow-lg">
+          <span class="material-symbols-outlined text-2xl">lock</span>
+        </div>
+        <h2 class="text-lg font-bold text-on-surface">Acesso Restrito ao Painel</h2>
+        <p class="text-xs text-on-surface-variant max-w-xs leading-relaxed">
+          Software de uso exclusivo para assinantes licenciados. Não há cadastro público.
+        </p>
+      </div>
+
+      <form id="formLogin" class="flex flex-col gap-3.5">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-on-surface uppercase">E-mail Cadastrado</label>
+          <input id="loginEmail" type="email" required placeholder="seu-email@cliente.com" class="h-11 px-3.5 rounded-xl bg-surface-container text-sm text-on-surface border border-surface-container-high focus:outline-none focus:border-primary"/>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-on-surface uppercase">Senha de Acesso</label>
+          <input id="loginPassword" type="password" required placeholder="••••••••" class="h-11 px-3.5 rounded-xl bg-surface-container text-sm text-on-surface border border-surface-container-high focus:outline-none focus:border-primary"/>
+        </div>
+        <div id="loginErrorMsg" class="hidden text-xs text-error font-medium p-2.5 rounded-lg bg-error-container/20 border border-error/30 text-center"></div>
+
+        <button type="submit" class="h-11 rounded-xl bg-primary-container text-on-primary-container font-bold text-sm hover:opacity-90 transition-opacity shadow-md flex items-center justify-center gap-2">
+          <span>Entrar no Dashboard</span>
+          <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+      </form>
+
+      <div class="p-3 rounded-xl bg-surface-container text-[11px] text-on-surface-variant text-center border border-surface-container-high/40">
+        🔒 Licença vinculada via Google Firebase • 1 navegador por chave.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL KILLSWITCH: REVOGAÇÃO INSTANTÂNEA (CAMADA 4) -->
+  <div id="killswitchModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest border border-error/40 rounded-2xl w-full max-w-md p-space-xl shadow-2xl flex flex-col items-center text-center gap-4">
+      <div class="w-14 h-14 rounded-full bg-error-container/30 text-error flex items-center justify-center">
+        <span class="material-symbols-outlined text-3xl">block</span>
+      </div>
+      <h3 class="text-lg font-bold text-on-surface">Licença Bloqueada ou Suspensa</h3>
+      <p class="text-xs text-on-surface-variant leading-relaxed">
+        O acesso a esta conta foi desativado pelo administrador ou o período da licença expirou.
+      </p>
+      <button onclick="location.reload()" class="px-5 py-2 rounded-xl bg-surface-container-high text-xs font-bold text-on-surface hover:bg-surface-container-highest">
+        Tentar Novamente
+      </button>
+    </div>
+  </div>
+</body>
+</html>

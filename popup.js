@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnReset = document.getElementById("btn-reset");
   const chkAutoOpenClick = document.getElementById("chk-auto-open-click");
   const chkAutoOpenIg = document.getElementById("chk-auto-open-ig");
-  const chkAutoBackup = document.getElementById("chk-auto-backup");
 
   let isPanelVisible = false;
 
@@ -67,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Carrega preferências salvas
   if (chrome.storage && chrome.storage.local) {
-    chrome.storage.local.get(["autoOpenOnClick", "autoOpenOnInstagram", "autoBackupEnabled"], (res) => {
+    chrome.storage.local.get(["autoOpenOnClick", "autoOpenOnInstagram"], (res) => {
       if (res) {
         if (typeof res.autoOpenOnClick === "boolean") {
           chkAutoOpenClick.checked = res.autoOpenOnClick;
@@ -75,12 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof res.autoOpenOnInstagram === "boolean") {
           chkAutoOpenIg.checked = res.autoOpenOnInstagram;
         }
-        if (typeof res.autoBackupEnabled === "boolean" && chkAutoBackup) {
-          chkAutoBackup.checked = res.autoBackupEnabled;
-        }
       }
 
-      // Se a opção "abrir painel ao clicar na extensão" estiver ativa, envia comando para abrir na tela
+      // Só mostra o painel automaticamente se o usuário marcou essa opção
       if (chkAutoOpenClick.checked) {
         sendToActiveTab({ type: "SHOW_PANEL" }, (res) => {
           if (res && res.panelVisible !== undefined) {
@@ -147,12 +143,5 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.storage.local.set({ autoOpenOnInstagram: chkAutoOpenIg.checked });
     sendToActiveTab({ type: "SET_AUTO_OPEN_IG", value: chkAutoOpenIg.checked });
   });
-
-  if (chkAutoBackup) {
-    chkAutoBackup.addEventListener("change", () => {
-      chrome.storage.local.set({ autoBackupEnabled: chkAutoBackup.checked });
-      sendToActiveTab({ type: "SET_AUTO_BACKUP", value: chkAutoBackup.checked });
-    });
-  }
 });
 

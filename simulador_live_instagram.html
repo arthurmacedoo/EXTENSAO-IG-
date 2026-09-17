@@ -384,6 +384,31 @@
           }
         ]
       }, "*");
+
+      // Sincronização em tempo real direta com o Dashboard (BroadcastChannel e Storage)
+      try {
+        const bc = new BroadcastChannel('ig_live_stream');
+        bc.postMessage({
+          type: "NEW_COMMENT",
+          comment: {
+            pk: "sim_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8),
+            created_at: now,
+            username: cleanUser,
+            text: text,
+            avatar: avatarSrc
+          }
+        });
+      } catch(e) {}
+
+      try {
+        localStorage.setItem("ig_live_last_comment", JSON.stringify({
+          pk: "sim_" + Date.now(),
+          username: cleanUser,
+          text: text,
+          avatar: avatarSrc,
+          time: new Date().toLocaleTimeString("pt-BR")
+        }));
+      } catch(e) {}
     }
 
     function escapeHtml(str) {

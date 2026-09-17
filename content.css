@@ -3,6 +3,7 @@
    ========================================================================== */
 
 #ig-live-capture-panel {
+  display: none; /* Oculto por padrão — só abre quando o usuário clicar na extensão */
   position: fixed;
   top: 20px;
   right: 20px;

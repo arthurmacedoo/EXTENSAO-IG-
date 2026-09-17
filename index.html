@@ -133,7 +133,7 @@
           </p>
         </div>
 
-        <form id="formLogin" class="space-y-4">
+        <form id="formLogin" class="space-y-4" onsubmit="event.preventDefault();">
           <div>
             <label class="block text-xs font-semibold text-slate-300 tracking-wider uppercase mb-1.5" for="loginEmail">
               E-mail Autorizado
@@ -1407,6 +1407,7 @@
           setTimeout(() => { btnCopyAll.innerHTML = '<span class="material-symbols-outlined text-xs">content_copy</span><span>Copiar Todos</span>'; }, 1800);
         });
       });
+    }
     // -----------------------------------------------------------------------
     // FIREBASE AUTH & SEGURANÇA EM 4 CAMADAS
     // -----------------------------------------------------------------------
@@ -1542,10 +1543,14 @@
             const registeredDevice = licData.device_fingerprint;
             if (!registeredDevice || registeredDevice.trim() === "") {
               // Primeiro acesso: registra este navegador na licença
-              await fbDb.collection("licenses").doc(licenseKey).update({
-                device_fingerprint: deviceId,
-                last_login: firebase.firestore.FieldValue.serverTimestamp()
-              });
+              try {
+                await fbDb.collection("licenses").doc(licenseKey).update({
+                  device_fingerprint: deviceId,
+                  last_login: firebase.firestore.FieldValue.serverTimestamp()
+                });
+              } catch (writeErr) {
+                console.warn("Aviso ao salvar device_fingerprint:", writeErr);
+              }
             } else if (registeredDevice !== deviceId) {
               // Já registrado em outro navegador: bloqueia!
               showLoginError(`🚫 Chave em uso em outro navegador (${registeredDevice.substring(0, 10)}...). Cada licença é restrita a 1 dispositivo. Solicite a transferência.`);

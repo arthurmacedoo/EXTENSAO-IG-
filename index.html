@@ -97,6 +97,147 @@
 <body class="bg-background font-sans text-on-surface antialiased">
 
   <!-- ===================================================================== -->
+  <!-- PORTAL DE AUTENTICAÇÃO E LICENCIAMENTO (STITCH AI DESIGN - 4 CAMADAS)  -->
+  <!-- ===================================================================== -->
+  <div id="authPortal" class="min-h-screen w-full flex flex-col justify-between py-8 px-4 sm:px-6 lg:px-8 bg-[#0b1326] relative z-50">
+    <!-- Top Security Banner -->
+    <header class="w-full max-w-4xl mx-auto flex items-center justify-between py-2">
+      <div class="flex items-center space-x-2 text-xs font-mono tracking-wider text-slate-400">
+        <span class="inline-block w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+        <span class="text-slate-300 font-medium">DISPOSITIVO:</span>
+        <span id="displayDeviceId" class="text-blue-400 font-mono">DETECTANDO...</span>
+      </div>
+      <div class="flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span>4 CAMADAS DE PROTEÇÃO ATIVAS</span>
+      </div>
+    </header>
+
+    <!-- Main Auth Card -->
+    <main class="w-full max-w-xl mx-auto my-auto py-4">
+      <div class="rounded-2xl p-6 sm:p-8 relative overflow-hidden bg-[#131b2e]/90 border border-blue-500/20 backdrop-blur-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)]">
+        <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
+
+        <div class="flex flex-col items-center text-center mb-6">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-emerald-400 flex items-center justify-center text-white shadow-lg mb-3">
+            <span class="material-symbols-outlined text-2xl">sensors</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">
+            Acesso Operacional • IG Live Captura
+          </h1>
+          <p class="text-xs text-slate-400 mt-1">
+            Entre com suas credenciais de operador para sincronizar a transmissão ao vivo
+          </p>
+        </div>
+
+        <form id="formLogin" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 tracking-wider uppercase mb-1.5" for="loginEmail">
+              E-mail Autorizado
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <span class="material-symbols-outlined text-base">mail</span>
+              </div>
+              <input id="loginEmail" type="email" required placeholder="seu-email@cliente.com" class="block w-full pl-10 pr-3 py-2.5 rounded-lg bg-[#0b1222] border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all"/>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 tracking-wider uppercase mb-1.5" for="loginPassword">
+              Senha de Acesso
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <span class="material-symbols-outlined text-base">lock</span>
+              </div>
+              <input id="loginPassword" type="password" required placeholder="••••••••••••" class="block w-full pl-10 pr-10 py-2.5 rounded-lg bg-[#0b1222] border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-all"/>
+              <button type="button" id="togglePasswordBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white">
+                <span id="togglePasswordIcon" class="material-symbols-outlined text-base">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="loginErrorMsg" class="hidden text-xs text-red-300 font-medium p-3 rounded-lg bg-red-950/40 border border-red-500/40 leading-relaxed flex items-start gap-2">
+            <span class="material-symbols-outlined text-base text-red-400 shrink-0">error</span>
+            <span id="loginErrorText"></span>
+          </div>
+
+          <button id="btnSubmitLogin" type="submit" class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-semibold text-white text-sm shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2">
+            <span id="btnSubmitText">Entrar no Painel Operacional</span>
+            <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </button>
+        </form>
+
+        <!-- Divisória -->
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-slate-800"></div>
+          </div>
+          <div class="relative flex justify-center text-[10px] uppercase tracking-widest text-slate-500 font-mono">
+            <span class="bg-[#131b2e] px-3 font-semibold text-slate-400">Proteção Integrada 4 Camadas</span>
+          </div>
+        </div>
+
+        <!-- 4 Camadas Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left">
+          <div class="rounded-lg p-2.5 bg-slate-900/60 border border-slate-800 flex items-start gap-2.5">
+            <div class="p-1.5 rounded bg-blue-950 border border-blue-500/30 text-blue-400 shrink-0">
+              <span class="material-symbols-outlined text-sm">devices</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-semibold text-slate-200">1. Licença por Dispositivo</h4>
+              <p class="text-[10px] text-slate-400 mt-0.5 leading-snug">Vínculo com o navegador. Rejeita uso simultâneo.</p>
+            </div>
+          </div>
+
+          <div class="rounded-lg p-2.5 bg-slate-900/60 border border-slate-800 flex items-start gap-2.5">
+            <div class="p-1.5 rounded bg-indigo-950 border border-indigo-500/30 text-indigo-400 shrink-0">
+              <span class="material-symbols-outlined text-sm">lock</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-semibold text-slate-200">2. Acesso Fechado</h4>
+              <p class="text-[10px] text-slate-400 mt-0.5 leading-snug">Sem cadastro público. Usuário provisionado pelo admin.</p>
+            </div>
+          </div>
+
+          <div class="rounded-lg p-2.5 bg-slate-900/60 border border-slate-800 flex items-start gap-2.5">
+            <div class="p-1.5 rounded bg-sky-950 border border-sky-500/30 text-sky-400 shrink-0">
+              <span class="material-symbols-outlined text-sm">hub</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-semibold text-slate-200">3. Vínculo Firebase</h4>
+              <p class="text-[10px] text-slate-400 mt-0.5 leading-snug">Conta associada à chave no Firestore em tempo real.</p>
+            </div>
+          </div>
+
+          <div class="rounded-lg p-2.5 bg-slate-900/60 border border-slate-800 flex items-start gap-2.5">
+            <div class="p-1.5 rounded bg-red-950 border border-red-500/30 text-red-400 shrink-0">
+              <span class="material-symbols-outlined text-sm">bolt</span>
+            </div>
+            <div>
+              <h4 class="text-xs font-semibold text-slate-200">4. Killswitch Imediato</h4>
+              <p class="text-[10px] text-slate-400 mt-0.5 leading-snug">Revogação remota instantânea pelo Firestore.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="w-full max-w-4xl mx-auto text-center py-2 text-[11px] text-slate-500 font-mono">
+      <span>IG Live Captura Enterprise • Google Firebase • AES-GCM-256</span>
+    </footer>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- DASHBOARD PRINCIPAL (OCULTO POR PADRÃO ATÉ AUTENTICAÇÃO REAL)         -->
+  <!-- ===================================================================== -->
+  <div id="appDashboard" style="display: none;">
+
+  <!-- ===================================================================== -->
   <!-- 1. BARRA LATERAL FIXA (SIDEBAR DE NAVEGAÇÃO SPA)                      -->
   <!-- ===================================================================== -->
   <aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest z-50 flex flex-col justify-between p-space-md shadow-[0_1px_8px_rgba(0,0,0,0.4)] border-r border-surface-container-high/40">
@@ -136,20 +277,24 @@
     <!-- PAINEL DE PERFIL E STATUS DO USUÁRIO -->
     <div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-space-md border border-surface-container-high/40">
       <div class="flex items-center gap-space-sm">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-tertiary flex items-center justify-center text-surface font-bold text-xs">
-          MC
+        <div id="userAvatar" class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-tertiary flex items-center justify-center text-surface font-bold text-xs">
+          OP
         </div>
         <div class="flex flex-col overflow-hidden">
-          <span class="text-xs font-semibold text-on-surface truncate">Mariana Costa</span>
-          <span class="text-[10px] text-tertiary font-medium">Operador Master • Pro</span>
+          <span id="userProfileEmail" class="text-xs font-semibold text-on-surface truncate">operador@live.com</span>
+          <span id="userProfilePlan" class="text-[10px] text-tertiary font-medium">Plano PRO • Licença Ativa</span>
         </div>
       </div>
       <div class="flex items-center justify-between text-[11px] text-on-surface-variant px-1 border-t border-surface-container-high/40 pt-2">
-        <span>Status Sistema</span>
-        <span class="text-tertiary font-bold flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span> Online
+        <span>Status Licença</span>
+        <span id="userLicenseBadge" class="text-tertiary font-bold flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span> Ativa
         </span>
       </div>
+      <button id="btnLogout" type="button" class="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-surface-container-highest text-secondary hover:bg-secondary-container hover:text-on-secondary-container text-xs font-semibold transition-colors">
+        <span class="material-symbols-outlined text-sm">logout</span>
+        <span>Sair do Painel</span>
+      </button>
     </div>
   </aside>
 
@@ -189,6 +334,17 @@
         <div class="flex items-center gap-space-xs bg-surface-container-low px-3 py-1 rounded-full border border-tertiary/20">
           <span class="material-symbols-outlined text-tertiary text-sm">wifi_tethering</span>
           <span class="text-[11px] text-tertiary font-bold uppercase">Feed Conectado</span>
+        </div>
+
+        <!-- PERFIL & LOGOUT NO HEADER -->
+        <div class="flex items-center gap-2 pl-2 border-l border-surface-container-high/60">
+          <div class="hidden sm:flex flex-col text-right">
+            <span id="headerUserEmail" class="text-xs font-semibold text-on-surface">operador</span>
+            <span id="headerUserPlan" class="text-[10px] text-tertiary font-bold">Plano PRO</span>
+          </div>
+          <button id="btnHeaderLogout" type="button" title="Sair da Conta" class="p-2 rounded-lg bg-surface-container-high text-secondary hover:bg-secondary-container hover:text-on-secondary-container transition-colors flex items-center justify-center">
+            <span class="material-symbols-outlined text-sm">logout</span>
+          </button>
         </div>
       </div>
     </header>
@@ -731,6 +887,7 @@
 
     </main>
   </div>
+</div> <!-- FECHAMENTO APPDASHBOARD -->
 
   <!-- ===================================================================== -->
   <!-- 3. MODAIS GLOBAIS (DETALHES DA LIVE & CADASTRO DE GATILHO)            -->
@@ -1279,24 +1436,76 @@
       console.warn("Firebase não inicializado com chaves reais:", err);
     }
 
-    const authOverlay = document.getElementById('authOverlay');
+    // -----------------------------------------------------------------------
+    // CAMADA 1: IDENTIFICADOR ÚNICO DE DISPOSITIVO / NAVEGADOR (FINGERPRINT)
+    // -----------------------------------------------------------------------
+    let deviceId = localStorage.getItem('ig_device_id');
+    if (!deviceId) {
+      deviceId = 'DEV-' + Math.random().toString(36).substring(2, 7).toUpperCase() + '-' + Date.now().toString(36).slice(-4).toUpperCase();
+      localStorage.setItem('ig_device_id', deviceId);
+    }
+    const displayDeviceId = document.getElementById('displayDeviceId');
+    if (displayDeviceId) displayDeviceId.textContent = deviceId;
+
+    // Elementos DOM
+    const authPortal = document.getElementById('authPortal');
+    const appDashboard = document.getElementById('appDashboard');
     const killswitchModal = document.getElementById('killswitchModal');
     const formLogin = document.getElementById('formLogin');
     const loginErrorMsg = document.getElementById('loginErrorMsg');
+    const loginErrorText = document.getElementById('loginErrorText');
+    const btnSubmitLogin = document.getElementById('btnSubmitLogin');
+    const btnSubmitText = document.getElementById('btnSubmitText');
+    const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+    const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+    const loginPassword = document.getElementById('loginPassword');
 
-    // Inicialização do fluxo de autenticação
+    // Toggle de visibilidade da senha
+    if (togglePasswordBtn && loginPassword) {
+      togglePasswordBtn.addEventListener('click', () => {
+        if (loginPassword.type === 'password') {
+          loginPassword.type = 'text';
+          if (togglePasswordIcon) togglePasswordIcon.textContent = 'visibility_off';
+        } else {
+          loginPassword.type = 'password';
+          if (togglePasswordIcon) togglePasswordIcon.textContent = 'visibility';
+        }
+      });
+    }
+
+    // Função de Logout Limpo
+    function performLogout() {
+      if (unsubscribeKillswitch) {
+        unsubscribeKillswitch();
+        unsubscribeKillswitch = null;
+      }
+      if (fbAuth) {
+        fbAuth.signOut();
+      }
+      if (appDashboard) appDashboard.style.display = 'none';
+      if (authPortal) authPortal.style.display = 'flex';
+      if (killswitchModal) killswitchModal.classList.add('hidden');
+      if (loginErrorMsg) loginErrorMsg.classList.add('hidden');
+    }
+
+    const btnLogout = document.getElementById('btnLogout');
+    if (btnLogout) btnLogout.addEventListener('click', performLogout);
+    const btnHeaderLogout = document.getElementById('btnHeaderLogout');
+    if (btnHeaderLogout) btnHeaderLogout.addEventListener('click', performLogout);
+
+    // Inicialização do fluxo de autenticação e validação das 4 Camadas
     if (fbAuth) {
       fbAuth.onAuthStateChanged(async (user) => {
         if (user) {
-          // Usuário autenticado: verificar Camada 3 (Vínculo da Chave + Licença no Firestore)
           try {
+            // CAMADA 3: Busca a licença vinculada ao usuário
             let userDoc = await fbDb.collection("users").doc(user.uid).get();
             if (!userDoc.exists && user.email) {
               userDoc = await fbDb.collection("users").doc(user.email).get();
             }
             let licenseKey = userDoc.exists ? userDoc.data().licenseKey : null;
 
-            // Fallback: se não achar na collection users, busca direto em licenses por email_cliente
+            // Fallback: busca na coleção licenses pelo email_cliente
             if (!licenseKey && user.email) {
               const licQuery = await fbDb.collection("licenses").where("email_cliente", "==", user.email).limit(1).get();
               if (!licQuery.empty) {
@@ -1305,59 +1514,108 @@
             }
 
             if (!licenseKey) {
-              showLoginError("Conta sem licença vinculada. Solicite liberação ao administrador.");
+              showLoginError("Conta sem licença ativa vinculada. Solicite liberação ao administrador.");
+              performLogout();
+              return;
+            }
+
+            // Busca os dados da licença no Firestore
+            const licDoc = await fbDb.collection("licenses").doc(licenseKey).get();
+            if (!licDoc.exists) {
+              showLoginError("Chave de licença não encontrada no banco de dados.");
+              performLogout();
+              return;
+            }
+
+            const licData = licDoc.data();
+
+            // CAMADA 4 (Status Inicial: Ativo?)
+            if (licData.status !== "active") {
+              if (authPortal) authPortal.style.display = 'none';
+              if (appDashboard) appDashboard.style.display = 'none';
+              if (killswitchModal) killswitchModal.classList.remove('hidden');
               fbAuth.signOut();
               return;
             }
 
-            // Escuta em tempo real da licença (CAMADA 4: REVOGAÇÃO INSTANTÂNEA / KILLSWITCH)
+            // CAMADA 1: Trava de Hardware / Navegador Único
+            const registeredDevice = licData.device_fingerprint;
+            if (!registeredDevice || registeredDevice.trim() === "") {
+              // Primeiro acesso: registra este navegador na licença
+              await fbDb.collection("licenses").doc(licenseKey).update({
+                device_fingerprint: deviceId,
+                last_login: firebase.firestore.FieldValue.serverTimestamp()
+              });
+            } else if (registeredDevice !== deviceId) {
+              // Já registrado em outro navegador: bloqueia!
+              showLoginError(`🚫 Chave em uso em outro navegador (${registeredDevice.substring(0, 10)}...). Cada licença é restrita a 1 dispositivo. Solicite a transferência.`);
+              performLogout();
+              return;
+            }
+
+            // CAMADA 4: ESCUTA EM TEMPO REAL (KILLSWITCH / REVOGAÇÃO INSTANTÂNEA)
             if (unsubscribeKillswitch) unsubscribeKillswitch();
-            unsubscribeKillswitch = fbDb.collection("licenses").doc(licenseKey).onSnapshot((doc) => {
-              if (!doc.exists || doc.data().status !== "active") {
-                // Bloqueio imediato!
-                authOverlay.classList.add('hidden');
-                killswitchModal.classList.remove('hidden');
+            unsubscribeKillswitch = fbDb.collection("licenses").doc(licenseKey).onSnapshot((docSnap) => {
+              if (!docSnap.exists || docSnap.data().status !== "active") {
+                if (appDashboard) appDashboard.style.display = 'none';
+                if (authPortal) authPortal.style.display = 'none';
+                if (killswitchModal) killswitchModal.classList.remove('hidden');
                 fbAuth.signOut();
-              } else {
-                // Acesso permitido
-                authOverlay.classList.add('hidden');
-                killswitchModal.classList.add('hidden');
-                updateUserProfile(user.email, doc.data().plan || "PRO");
               }
             });
 
+            // SUCESSO: Libera o Dashboard e atualiza perfil dinâmico
+            if (authPortal) authPortal.style.display = 'none';
+            if (appDashboard) appDashboard.style.display = 'block';
+            if (killswitchModal) killswitchModal.classList.add('hidden');
+
+            updateUserProfile(user.email, licData.plan || "PRO");
+
           } catch(e) {
             console.error("Erro ao validar licença:", e);
-            authOverlay.classList.remove('hidden');
+            showLoginError(e.message || "Erro ao conectar com o servidor de segurança.");
+            performLogout();
           }
         } else {
-          // Sem login ativo: Exibe tela de login obrigatória (CAMADA 2)
-          authOverlay.classList.remove('hidden');
+          // Sem usuário ativo: exibe estritamente o Portal de Login
+          if (authPortal) authPortal.style.display = 'flex';
+          if (appDashboard) appDashboard.style.display = 'none';
         }
       });
 
+      // Submit do Formulário de Login (CAMADA 2)
       if (formLogin) {
         formLogin.addEventListener('submit', async (e) => {
           e.preventDefault();
           const email = document.getElementById('loginEmail').value.trim();
           const pass = document.getElementById('loginPassword').value.trim();
-          loginErrorMsg.classList.add('hidden');
+          if (loginErrorMsg) loginErrorMsg.classList.add('hidden');
+
+          if (btnSubmitLogin) {
+            btnSubmitLogin.disabled = true;
+            if (btnSubmitText) btnSubmitText.textContent = "Autenticando...";
+          }
 
           try {
             await fbAuth.signInWithEmailAndPassword(email, pass);
           } catch(err) {
-            showLoginError("E-mail ou senha inválidos. Verifique com o suporte.");
+            console.error("Falha no login:", err);
+            showLoginError("E-mail ou senha incorretos. Apenas contas provisionadas têm acesso.");
+          } finally {
+            if (btnSubmitLogin) {
+              btnSubmitLogin.disabled = false;
+              if (btnSubmitText) btnSubmitText.textContent = "Entrar no Painel Operacional";
+            }
           }
         });
       }
     } else {
-      // Modo Demonstração Local: exibe banner indicativo suave
-      console.log("Dashboard rodando em Modo Demonstração Local (sem chaves Firebase conectadas).");
+      console.log("Dashboard em demonstração local (chaves Firebase não conectadas).");
     }
 
     function showLoginError(msg) {
-      if (loginErrorMsg) {
-        loginErrorMsg.textContent = msg;
+      if (loginErrorMsg && loginErrorText) {
+        loginErrorText.textContent = msg;
         loginErrorMsg.classList.remove('hidden');
       }
     }
@@ -1365,13 +1623,22 @@
     function updateUserProfile(email, plan) {
       const elEmail = document.getElementById('userProfileEmail');
       const elPlan = document.getElementById('userProfilePlan');
+      const elAvatar = document.getElementById('userAvatar');
+      const hEmail = document.getElementById('headerUserEmail');
+      const hPlan = document.getElementById('headerUserPlan');
+
       if (elEmail) elEmail.textContent = email;
       if (elPlan) elPlan.textContent = `Plano ${plan} • Licença Ativa`;
+      if (hEmail) hEmail.textContent = email.split('@')[0];
+      if (hPlan) hPlan.textContent = `Plano ${plan}`;
+      if (elAvatar && email) {
+        const initials = email.substring(0, 2).toUpperCase();
+        elAvatar.textContent = initials;
+      }
     }
 
     function handleLogout() {
-      if (fbAuth) fbAuth.signOut();
-      location.reload();
+      performLogout();
     }
 
     // -----------------------------------------------------------------------
@@ -1393,42 +1660,6 @@
     }
   </script>
 
-  <!-- MODAL DE LOGIN FECHADO (CAMADA 2: SEM CADASTRO PÚBLICO) -->
-  <div id="authOverlay" class="fixed inset-0 z-50 bg-background/95 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-surface-container-low border border-surface-container-high rounded-2xl w-full max-w-md p-space-xl shadow-2xl flex flex-col gap-5">
-      <div class="flex flex-col items-center text-center gap-2">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-container to-tertiary flex items-center justify-center text-white shadow-lg">
-          <span class="material-symbols-outlined text-2xl">lock</span>
-        </div>
-        <h2 class="text-lg font-bold text-on-surface">Acesso Restrito ao Painel</h2>
-        <p class="text-xs text-on-surface-variant max-w-xs leading-relaxed">
-          Software de uso exclusivo para assinantes licenciados. Não há cadastro público.
-        </p>
-      </div>
-
-      <form id="formLogin" class="flex flex-col gap-3.5">
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-on-surface uppercase">E-mail Cadastrado</label>
-          <input id="loginEmail" type="email" required placeholder="seu-email@cliente.com" class="h-11 px-3.5 rounded-xl bg-surface-container text-sm text-on-surface border border-surface-container-high focus:outline-none focus:border-primary"/>
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-bold text-on-surface uppercase">Senha de Acesso</label>
-          <input id="loginPassword" type="password" required placeholder="••••••••" class="h-11 px-3.5 rounded-xl bg-surface-container text-sm text-on-surface border border-surface-container-high focus:outline-none focus:border-primary"/>
-        </div>
-        <div id="loginErrorMsg" class="hidden text-xs text-error font-medium p-2.5 rounded-lg bg-error-container/20 border border-error/30 text-center"></div>
-
-        <button type="submit" class="h-11 rounded-xl bg-primary-container text-on-primary-container font-bold text-sm hover:opacity-90 transition-opacity shadow-md flex items-center justify-center gap-2">
-          <span>Entrar no Dashboard</span>
-          <span class="material-symbols-outlined text-sm">arrow_forward</span>
-        </button>
-      </form>
-
-      <div class="p-3 rounded-xl bg-surface-container text-[11px] text-on-surface-variant text-center border border-surface-container-high/40">
-        🔒 Licença vinculada via Google Firebase • 1 navegador por chave.
-      </div>
-    </div>
-  </div>
-
   <!-- MODAL KILLSWITCH: REVOGAÇÃO INSTANTÂNEA (CAMADA 4) -->
   <div id="killswitchModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-surface-container-lowest border border-error/40 rounded-2xl w-full max-w-md p-space-xl shadow-2xl flex flex-col items-center text-center gap-4">
@@ -1437,10 +1668,10 @@
       </div>
       <h3 class="text-lg font-bold text-on-surface">Licença Bloqueada ou Suspensa</h3>
       <p class="text-xs text-on-surface-variant leading-relaxed">
-        O acesso a esta conta foi desativado pelo administrador ou o período da licença expirou.
+        O acesso a esta conta foi suspenso pelo administrador no Firebase ou a licença expirou.
       </p>
-      <button onclick="location.reload()" class="px-5 py-2 rounded-xl bg-surface-container-high text-xs font-bold text-on-surface hover:bg-surface-container-highest">
-        Tentar Novamente
+      <button onclick="performLogout()" class="px-5 py-2.5 rounded-xl bg-primary-container text-xs font-bold text-on-primary-container hover:opacity-90 transition-opacity">
+        Voltar para a Tela de Login
       </button>
     </div>
   </div>

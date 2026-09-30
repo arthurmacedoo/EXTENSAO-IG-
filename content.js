@@ -1406,7 +1406,14 @@
     await ensureActiveSession();
     buildPanel();
     // Painel já nasce oculto pelo CSS (display: none).
-    // Só é exibido quando o usuário clica no ícone da extensão (SHOW_PANEL / TOGGLE_PANEL).
+    // Só é exibido se o usuário configurou para abrir automaticamente ou se clicar no ícone.
+    if (chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(["autoOpenOnInstagram"], (res) => {
+        if (res && res.autoOpenOnInstagram) {
+          showPanel();
+        }
+      });
+    }
     updateStatusBadge();
     updateCounterAndPreview();
     setInterval(updateStatusBadge, 2000);

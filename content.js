@@ -434,6 +434,53 @@
 
     updateCounterAndPreview(entry);
 
+    // Broadcast em tempo real para a Dashboard aberta em outra aba
+    if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
+      try {
+        chrome.runtime.sendMessage({
+          type: "IG_LIVE_COMMENT_CAPTURED",
+          comment: {
+            pk: entry.pk || entry.id,
+            username: entry.user,
+            text: entry.comment,
+            avatar: entry.avatar || null,
+            time: entry.captured_time,
+            timestampMs: entry.timestampMs || Date.now()
+          }
+        }, () => {
+          if (chrome.runtime.lastError) {
+            // Callback vazio para evitar Uncaught (in promise)
+          }
+        });
+      } catch (e) {}
+    }
+
+    // Broadcast local caso a Dashboard esteja aberta na mesma origem
+    try {
+      const bc = new BroadcastChannel("ig_live_stream");
+      bc.postMessage({
+        type: "NEW_COMMENT",
+        comment: {
+          pk: entry.pk || entry.id,
+          username: entry.user,
+          text: entry.comment,
+          avatar: entry.avatar || null,
+          time: entry.captured_time
+        }
+      });
+      bc.close();
+    } catch (e) {}
+
+    try {
+      localStorage.setItem("ig_live_last_comment", JSON.stringify({
+        pk: entry.pk || entry.id,
+        username: entry.user,
+        text: entry.comment,
+        avatar: entry.avatar || null,
+        time: entry.captured_time
+      }));
+    } catch (e) {}
+
     // Auto-checkpoint a cada N comentários
     if (state.comments.length - state.lastCheckpointCount >= CONFIG.AUTO_CHECKPOINT_COUNT) {
       state.lastCheckpointCount = state.comments.length;
@@ -1151,6 +1198,7 @@
 
   function buildPanel() {
     if (document.getElementById("ig-live-capture-panel")) return;
+    if (document.getElementById("authPortal") || document.getElementById("appDashboard")) return; // Não injeta o painel flutuante no próprio dashboard
 
     const panel = document.createElement("div");
     panel.id = "ig-live-capture-panel";
@@ -1337,6 +1385,12 @@
         if (req.value) {
           showPanel();
         }
+        sendResponse({ ok: true });
+      } else if (req.type === "DISPATCH_LIVE_COMMENT_TO_DASHBOARD") {
+        window.postMessage({
+          type: "IG_LIVE_NEW_COMMENT",
+          comment: req.comment
+        }, "*");
         sendResponse({ ok: true });
       }
       return true;

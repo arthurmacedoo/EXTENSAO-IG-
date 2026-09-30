@@ -14,9 +14,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function sendToActiveTab(msg, cb) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (!tabs || !tabs[0] || !tabs[0].id) return;
-      chrome.tabs.sendMessage(tabs[0].id, msg, (res) => {
-        if (!chrome.runtime.lastError && cb) {
+      const activeTab = tabs && tabs[0];
+      if (!activeTab || !activeTab.id) return;
+      chrome.tabs.sendMessage(activeTab.id, msg, (res) => {
+        if (chrome.runtime.lastError) {
+          if (ctxBadge) {
+            if (activeTab.url && activeTab.url.startsWith("file://")) {
+              ctxBadge.textContent = "⚠️ Ative 'Acesso a URLs de arquivo' em chrome://extensions";
+              ctxBadge.className = "ctx-badge ctx-live";
+            } else {
+              ctxBadge.textContent = "⚠️ Recarregue a aba da Live (F5)";
+              ctxBadge.className = "ctx-badge ctx-live";
+            }
+          }
+          return;
+        }
+        if (cb) {
           cb(res);
         }
       });

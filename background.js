@@ -12,6 +12,26 @@ chrome.runtime.onConnect.addListener((port) => {
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "IG_LIVE_COMMENT_CAPTURED") {
+    // Reenvia em tempo real para todas as outras abas (incluindo abas do Dashboard)
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach((tab) => {
+        if (tab.id && tab.id !== sender.tab?.id) {
+          chrome.tabs.sendMessage(tab.id, {
+            type: "DISPATCH_LIVE_COMMENT_TO_DASHBOARD",
+            comment: message.comment
+          }, () => {
+            if (chrome.runtime.lastError) {
+              // Silencia caso a aba não tenha listener
+            }
+          });
+        }
+      });
+    });
+    sendResponse({ ok: true });
+    return true;
+  }
+
   if (message.type === "IG_LIVE_DOWNLOAD") {
     const { content, mimeType, filename } = message;
 

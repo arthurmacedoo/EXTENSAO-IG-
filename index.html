@@ -367,21 +367,21 @@
               </div>
               <div class="flex items-center gap-1.5 text-on-surface font-semibold text-sm">
                 <span class="material-symbols-outlined text-primary text-base">photo_camera</span>
-                <span>@lojafashion_oficial</span>
+                <span id="liveProfileName">@minha_loja</span>
               </div>
               <span class="text-outline text-xs">•</span>
               <div class="flex items-center gap-1 bg-surface-container-highest/60 px-2 py-0.5 rounded text-on-surface-variant text-xs">
                 <span class="material-symbols-outlined text-xs">timer</span>
-                <span class="font-mono font-bold" id="streamTimer">01:24:18</span>
+                <span class="font-mono font-bold" id="streamTimer">00:00:00</span>
               </div>
               <div class="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-tertiary-container/30 text-tertiary text-xs">
-                <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                <span>Buffer 0.4s</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+                <span>Buffer Ativo</span>
               </div>
             </div>
 
             <!-- Ações Rápidas -->
-            <div class="flex items-center gap-space-sm">
+            <div class="flex items-center gap-space-sm flex-wrap">
               <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold transition-all shadow-sm" id="btnPauseCapture">
                 <span class="material-symbols-outlined text-sm text-secondary">pause_circle</span>
                 <span id="pauseLabel">Pausar Captura</span>
@@ -389,6 +389,10 @@
               <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container text-on-primary-container hover:opacity-90 text-xs font-bold transition-all shadow-md" id="btnExportCSV">
                 <span class="material-symbols-outlined text-sm">download</span>
                 <span>Exportar CSV</span>
+              </button>
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600/30 text-xs font-bold transition-all shadow-sm" id="btnEndLive">
+                <span class="material-symbols-outlined text-sm">stop_circle</span>
+                <span>Encerrar Live & Arquivar</span>
               </button>
             </div>
           </div>
@@ -400,9 +404,9 @@
               <div class="flex flex-col">
                 <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Total de Comentários</span>
                 <div class="flex items-baseline gap-1 mt-1">
-                  <span id="statCommentsCount" class="text-2xl font-bold text-on-surface">4.892</span>
-                  <span class="text-xs text-tertiary font-semibold flex items-center">
-                    <span class="material-symbols-outlined text-xs">trending_up</span>+14%
+                  <span id="statCommentsCount" class="text-2xl font-bold text-on-surface">0</span>
+                  <span class="text-xs text-tertiary font-semibold flex items-center ml-1">
+                    <span class="material-symbols-outlined text-xs">sensors</span>ao vivo
                   </span>
                 </div>
               </div>
@@ -416,8 +420,8 @@
               <div class="flex flex-col">
                 <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Espectadores Únicos</span>
                 <div class="flex items-baseline gap-1 mt-1">
-                  <span id="statViewersCount" class="text-2xl font-bold text-on-surface">1.240</span>
-                  <span class="text-xs text-tertiary font-semibold flex items-center">
+                  <span id="statViewersCount" class="text-2xl font-bold text-on-surface">0</span>
+                  <span class="text-xs text-tertiary font-semibold flex items-center ml-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-tertiary inline-block mr-1 animate-pulse"></span>ativos
                   </span>
                 </div>
@@ -433,8 +437,8 @@
               <div class="flex flex-col">
                 <span class="text-[11px] font-bold text-tertiary uppercase tracking-wider">Intenções de Compra</span>
                 <div class="flex items-baseline gap-1 mt-1">
-                  <span id="statIntentsCount" class="text-2xl font-bold text-tertiary">683</span>
-                  <span class="text-xs text-on-surface-variant">pedidos qualificados</span>
+                  <span id="statIntentsCount" class="text-2xl font-bold text-tertiary">0</span>
+                  <span class="text-xs text-on-surface-variant ml-1">pedidos qualificados</span>
                 </div>
               </div>
               <div class="w-10 h-10 rounded-xl bg-tertiary-container/30 flex items-center justify-center text-tertiary">
@@ -471,27 +475,12 @@
 
           <!-- Termos Frequentes (Chips) -->
           <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-surface-container-high/40">
-            <div class="flex flex-wrap items-center gap-1.5">
+            <div class="flex flex-wrap items-center gap-1.5" id="liveKeywordsChips">
               <span class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant flex items-center gap-1">
                 <span class="material-symbols-outlined text-xs text-primary">local_fire_department</span>
                 Termos Mais Citados:
               </span>
-              <button class="keyword-chip flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary text-xs font-bold" data-keyword="quero">
-                <span>quero</span>
-                <span class="px-1.5 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-mono">412</span>
-              </button>
-              <button class="keyword-chip flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary text-xs font-bold" data-keyword="pix">
-                <span>pix</span>
-                <span class="px-1.5 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-mono">289</span>
-              </button>
-              <button class="keyword-chip flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-highest text-primary text-xs" data-keyword="tamanho M">
-                <span>tamanho M</span>
-                <span class="px-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-[10px] font-mono">174</span>
-              </button>
-              <button class="keyword-chip flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface-container-highest text-primary text-xs" data-keyword="preço">
-                <span>preço</span>
-                <span class="px-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-[10px] font-mono">153</span>
-              </button>
+              <span class="text-xs text-outline italic">Nenhum termo registrado ainda nesta live.</span>
             </div>
             <button onclick="navigateTo('gatilhos')" class="text-xs text-primary hover:underline flex items-center gap-1 font-semibold">
               <span class="material-symbols-outlined text-xs">tune</span>
@@ -517,71 +506,13 @@
 
             <!-- Lista de cards do feed -->
             <div id="liveFeedContainer" class="flex flex-col gap-space-sm max-h-[720px] overflow-y-auto pr-1">
-              <!-- Comentário de Exemplo 1 -->
-              <div class="comment-item flex flex-col p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all shadow-sm gap-space-xs border border-tertiary/40" data-time="19:45:12" data-type="intent" data-user="@camila_silva92">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-space-sm">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-tertiary flex items-center justify-center text-surface font-bold text-xs ring-2 ring-tertiary">
-                      CS
-                    </div>
-                    <div class="flex flex-col">
-                      <div class="flex items-center gap-1.5">
-                        <span class="font-bold text-sm text-on-surface">@camila_silva92</span>
-                        <span class="px-2 py-0.5 rounded-full bg-tertiary-container/30 text-tertiary font-bold text-[10px] uppercase">INTENÇÃO DE COMPRA</span>
-                      </div>
-                      <span class="text-[10px] text-on-surface-variant">Cliente VIP • 3 compras prévias</span>
-                    </div>
-                  </div>
-                  <span class="text-xs text-on-surface-variant font-mono">19:45:12</span>
+              <div id="liveFeedEmptyState" class="flex flex-col items-center justify-center py-16 text-center text-on-surface-variant gap-3 bg-surface-container/30 rounded-2xl border border-dashed border-surface-container-high/60">
+                <div class="w-12 h-12 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-2xl animate-pulse">sensors</span>
                 </div>
-                <p class="text-sm text-on-surface font-medium pl-10">
-                  “QUERO O VESTIDO VERMELHO TAMANHO M NO PIX AGORA! Já chamei no direct”
-                </p>
-                <div class="flex items-center justify-between pt-2 mt-1 border-t border-surface-container-high/40 pl-10">
-                  <span class="px-2 py-0.5 rounded bg-tertiary-container/20 text-tertiary text-[10px] font-mono">#PIX</span>
-                  <div class="flex items-center gap-1.5">
-                    <button class="copy-handle-btn px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-highest text-xs text-on-surface flex items-center gap-1" onclick="navigator.clipboard.writeText('@camila_silva92')">
-                      <span class="material-symbols-outlined text-xs">content_copy</span>
-                      <span>Copiar @</span>
-                    </button>
-                    <button class="mark-attended-btn px-2.5 py-1 rounded bg-tertiary-container/20 text-tertiary hover:bg-tertiary-container/40 text-xs font-semibold">
-                      Atendido
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Comentário de Exemplo 2 -->
-              <div class="comment-item flex flex-col p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high transition-all shadow-sm gap-space-xs" data-time="19:45:08" data-type="intent" data-user="@anapaula_modas">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-space-sm">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-secondary to-primary flex items-center justify-center text-surface font-bold text-xs ring-2 ring-tertiary">
-                      AP
-                    </div>
-                    <div class="flex flex-col">
-                      <div class="flex items-center gap-1.5">
-                        <span class="font-bold text-sm text-on-surface">@anapaula_modas</span>
-                        <span class="px-2 py-0.5 rounded-full bg-tertiary-container/30 text-tertiary font-bold text-[10px] uppercase">COMPROVANTE ENVIADO</span>
-                      </div>
-                      <span class="text-[10px] text-on-surface-variant">Comprador Ativo</span>
-                    </div>
-                  </div>
-                  <span class="text-xs text-on-surface-variant font-mono">19:45:08</span>
-                </div>
-                <p class="text-sm text-on-surface font-medium pl-10">
-                  “PAGUEI O PIX!! Mandei o comprovante no direct agora mesmo @lojafashion_oficial”
-                </p>
-                <div class="flex items-center justify-between pt-2 mt-1 border-t border-surface-container-high/40 pl-10">
-                  <span class="px-2 py-0.5 rounded bg-surface-container-highest text-primary text-[10px] font-mono">#comprovante</span>
-                  <div class="flex items-center gap-1.5">
-                    <button class="copy-handle-btn px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-highest text-xs text-on-surface flex items-center gap-1" onclick="navigator.clipboard.writeText('@anapaula_modas')">
-                      <span class="material-symbols-outlined text-xs">content_copy</span>
-                      <span>Copiar @</span>
-                    </button>
-                    <button class="mark-attended-btn px-2.5 py-1 rounded bg-tertiary-container/20 text-tertiary hover:bg-tertiary-container/40 text-xs font-semibold">
-                      Atendido
-                    </button>
-                  </div>
+                <div>
+                  <h4 class="text-sm font-bold text-on-surface">Aguardando comentários da transmissão</h4>
+                  <p class="text-xs text-outline mt-1 max-w-sm">Os comentários da sua Live aparecerão aqui em tempo real assim que a captura for ligada no Instagram.</p>
                 </div>
               </div>
             </div>
@@ -602,26 +533,10 @@
               </div>
 
               <div id="buyersQueueList" class="flex flex-col gap-2 max-h-[500px] overflow-y-auto">
-                <div class="p-2.5 rounded-lg bg-surface-container flex items-center justify-between text-xs">
-                  <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center font-bold text-[10px]">@</div>
-                    <span class="font-bold text-on-surface">@camila_silva92</span>
-                  </div>
-                  <span class="text-[10px] text-tertiary font-mono font-bold">PIX • M</span>
-                </div>
-                <div class="p-2.5 rounded-lg bg-surface-container flex items-center justify-between text-xs">
-                  <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center font-bold text-[10px]">@</div>
-                    <span class="font-bold text-on-surface">@anapaula_modas</span>
-                  </div>
-                  <span class="text-[10px] text-tertiary font-mono font-bold">Pago</span>
-                </div>
-                <div class="p-2.5 rounded-lg bg-surface-container flex items-center justify-between text-xs">
-                  <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-[10px]">@</div>
-                    <span class="font-bold text-on-surface">@beatriz_oliveira</span>
-                  </div>
-                  <span class="text-[10px] text-primary font-mono font-bold">Blazer M</span>
+                <div id="buyersEmptyState" class="flex flex-col items-center justify-center py-12 text-center text-outline gap-2 bg-surface-container/20 rounded-xl border border-dashed border-surface-container-high/40">
+                  <span class="material-symbols-outlined text-2xl text-surface-bright">shopping_bag</span>
+                  <p class="text-xs text-on-surface-variant font-medium">Nenhum comprador ainda</p>
+                  <p class="text-[10px] text-outline max-w-[200px]">Clientes que comentarem "QUERO", "PIX", etc. entrarão automaticamente nesta fila.</p>
                 </div>
               </div>
             </div>
@@ -637,24 +552,24 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
           <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex flex-col justify-between">
             <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Lives Gravadas</span>
-            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">14</span><span class="text-[11px] text-tertiary ml-1">sessões</span></div>
+            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">0</span><span class="text-[11px] text-tertiary ml-1">sessões</span></div>
           </div>
           <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex flex-col justify-between">
             <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Comentários Salvos</span>
-            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">42.890</span><span class="text-[11px] text-on-surface-variant ml-1">capturados</span></div>
+            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">0</span><span class="text-[11px] text-on-surface-variant ml-1">capturados</span></div>
           </div>
           <div class="p-space-md rounded-xl bg-surface-container-low border border-tertiary/30 shadow-sm flex flex-col justify-between relative overflow-hidden">
             <div class="absolute right-0 top-0 bottom-0 w-1 bg-tertiary"></div>
             <span class="text-xs uppercase font-bold tracking-wider text-tertiary">Intenções QUERO/PIX</span>
-            <div class="mt-2"><span class="text-2xl font-bold text-tertiary">5.940</span><span class="text-[11px] text-tertiary ml-1 font-semibold">pedidos</span></div>
+            <div class="mt-2"><span class="text-2xl font-bold text-tertiary">0</span><span class="text-[11px] text-tertiary ml-1 font-semibold">pedidos</span></div>
           </div>
           <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex flex-col justify-between">
             <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Compradores Únicos</span>
-            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">2.418</span><span class="text-[11px] text-on-surface-variant ml-1">clientes</span></div>
+            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">0</span><span class="text-[11px] text-on-surface-variant ml-1">clientes</span></div>
           </div>
           <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high/60 shadow-sm flex flex-col justify-between">
             <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Faturamento Estimado</span>
-            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">R$ 412k</span><span class="text-[11px] text-tertiary ml-1 font-semibold">+18% m/m</span></div>
+            <div class="mt-2"><span class="text-2xl font-bold text-on-surface">R$ 0,00</span><span class="text-[11px] text-tertiary ml-1 font-semibold">acumulado</span></div>
           </div>
         </div>
 
@@ -684,7 +599,7 @@
               <span class="material-symbols-outlined text-primary text-base">view_list</span>
               Sessões Gravadas no Banco de Dados
             </h2>
-            <span id="liveCounterBadge" class="text-xs text-on-surface-variant font-medium">6 lives</span>
+            <span id="liveCounterBadge" class="text-xs text-on-surface-variant font-medium">0 lives</span>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-sm">
@@ -730,16 +645,16 @@
           </div>
 
           <div class="relative">
-            <input id="inputTestPhrase" type="text" value="QUERO o blazer azul no pix tamanho M, manda o direct!" class="w-full h-12 pl-4 pr-24 rounded-xl bg-surface-container-lowest text-on-surface text-sm border border-surface-container-high focus:outline-none focus:border-primary"/>
+            <input id="inputTestPhrase" type="text" placeholder="Digite um comentário para testar os gatilhos (ex: quero o blazer no pix)..." class="w-full h-12 pl-4 pr-24 rounded-xl bg-surface-container-lowest text-on-surface text-sm border border-surface-container-high focus:outline-none focus:border-primary"/>
             <button id="btnClearTest" class="absolute right-2.5 top-2.5 px-3 py-1 rounded-lg bg-surface-container-high text-xs text-on-surface-variant">Limpar</button>
           </div>
 
           <div class="mt-3 p-3 rounded-xl bg-surface-container-lowest/80 border border-surface-container-high flex flex-wrap items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-2">
               <span class="text-xs font-bold text-on-surface-variant uppercase">Gatilhos Detectados:</span>
-              <div id="detectedChipsContainer" class="flex flex-wrap gap-1.5"></div>
+              <div id="detectedChipsContainer" class="flex flex-wrap gap-1.5"><span class="text-xs text-on-surface-variant italic">Nenhum</span></div>
             </div>
-            <div id="testActionBadge" class="flex items-center gap-1 text-xs text-tertiary font-semibold bg-tertiary-container/20 px-3 py-1 rounded-full border border-tertiary/30">
+            <div id="testActionBadge" class="hidden flex items-center gap-1 text-xs text-tertiary font-semibold bg-tertiary-container/20 px-3 py-1 rounded-full border border-tertiary/30">
               Ação: Alerta Sonoro + Comprador Qualificado
             </div>
           </div>
@@ -776,29 +691,29 @@
             <div class="absolute right-0 top-0 bottom-0 w-1.5 bg-tertiary"></div>
             <span class="text-xs uppercase font-bold tracking-wider text-tertiary">Faturamento Estimado</span>
             <div class="mt-2">
-              <span class="text-3xl font-bold text-tertiary">R$ 84.620</span>
-              <p class="text-xs text-tertiary font-semibold mt-1">+22.4% vs live anterior</p>
+              <span class="text-3xl font-bold text-tertiary">R$ 0,00</span>
+              <p class="text-xs text-on-surface-variant font-semibold mt-1">Aguardando dados da live</p>
             </div>
           </div>
           <div class="p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md">
             <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Taxa de Conversão</span>
             <div class="mt-2">
-              <span class="text-3xl font-bold text-on-surface">13.9%</span>
-              <p class="text-xs text-primary font-semibold mt-1">683 pedidos de 4.892 comments</p>
+              <span class="text-3xl font-bold text-on-surface">0%</span>
+              <p class="text-xs text-on-surface-variant font-semibold mt-1">0 pedidos de 0 comments</p>
             </div>
           </div>
           <div class="p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md">
             <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Ticket Médio</span>
             <div class="mt-2">
-              <span class="text-3xl font-bold text-on-surface">R$ 123,80</span>
+              <span class="text-3xl font-bold text-on-surface">R$ 0,00</span>
               <p class="text-xs text-on-surface-variant mt-1">por comprador qualificado</p>
             </div>
           </div>
           <div class="p-space-lg rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-md">
             <span class="text-xs uppercase font-bold tracking-wider text-on-surface-variant">Tempo de Resposta</span>
             <div class="mt-2">
-              <span class="text-3xl font-bold text-on-surface">18s</span>
-              <p class="text-xs text-tertiary font-semibold mt-1">Velocidade no checkout</p>
+              <span class="text-3xl font-bold text-on-surface">--</span>
+              <p class="text-xs text-on-surface-variant font-semibold mt-1">Aguardando checkout</p>
             </div>
           </div>
         </div>
@@ -837,24 +752,24 @@
             </h3>
             <div class="flex flex-col gap-3">
               <div>
-                <div class="flex justify-between text-xs font-semibold mb-1"><span>1. Espectadores</span><span>1.240 (100%)</span></div>
-                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full w-full"></div></div>
+                <div class="flex justify-between text-xs font-semibold mb-1"><span>1. Espectadores</span><span>0 (0%)</span></div>
+                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full" style="width: 0%"></div></div>
               </div>
               <div>
-                <div class="flex justify-between text-xs font-semibold mb-1"><span>2. Comentaram</span><span>892 (71.9%)</span></div>
-                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary-container rounded-full" style="width: 71.9%"></div></div>
+                <div class="flex justify-between text-xs font-semibold mb-1"><span>2. Comentaram</span><span>0 (0%)</span></div>
+                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-primary-container rounded-full" style="width: 0%"></div></div>
               </div>
               <div>
-                <div class="flex justify-between text-xs font-semibold mb-1 text-tertiary"><span>3. Intenção QUERO</span><span>683 (55.0%)</span></div>
-                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-tertiary rounded-full" style="width: 55%"></div></div>
+                <div class="flex justify-between text-xs font-semibold mb-1 text-tertiary"><span>3. Intenção QUERO</span><span>0 (0%)</span></div>
+                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-tertiary rounded-full" style="width: 0%"></div></div>
               </div>
               <div>
-                <div class="flex justify-between text-xs font-semibold mb-1 text-tertiary"><span>4. Confirmação / Direct</span><span>412 (33.2%)</span></div>
-                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-tertiary rounded-full" style="width: 33.2%"></div></div>
+                <div class="flex justify-between text-xs font-semibold mb-1 text-tertiary"><span>4. Confirmação / Direct</span><span>0 (0%)</span></div>
+                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full bg-tertiary rounded-full" style="width: 0%"></div></div>
               </div>
             </div>
-            <div class="mt-4 p-3 rounded-xl bg-tertiary-container/15 border border-tertiary/30 text-xs">
-              <strong>Alta Retenção:</strong> 1 de cada 3 pessoas que comentaram iniciou o checkout.
+            <div class="mt-4 p-3 rounded-xl bg-surface-container-high/40 border border-surface-container-high text-xs text-on-surface-variant">
+              Inicie uma transmissão para acompanhar as taxas de retenção e fechamento de pedidos em tempo real.
             </div>
           </div>
 
@@ -1064,43 +979,100 @@
     if (btnPlaySampleChime) btnPlaySampleChime.addEventListener('click', playChime);
 
     // -----------------------------------------------------------------------
-    // SINCRONIZAÇÃO EM TEMPO REAL VIA BROADCASTCHANNEL E STORAGE
+    // GERENCIAMENTO DA LIVE ATUAL (100% LIMPO E RESETÁVEL)
     // -----------------------------------------------------------------------
-    let liveCommentsCount = 4892;
-    let liveIntentsCount = 683;
-    const feedContainer = document.getElementById('liveFeedContainer');
-    const buyersQueueList = document.getElementById('buyersQueueList');
+    let liveCommentsCount = 0;
+    let liveIntentsCount = 0;
+    let uniqueViewersSet = new Set();
+    let currentLiveComments = [];
+    let currentBuyersMap = new Map();
+    let liveStartTime = null;
+    let liveTimerInterval = null;
+    let isLivePaused = false;
     let autoScrollActive = true;
 
+    const feedContainer = document.getElementById('liveFeedContainer');
+    const buyersQueueList = document.getElementById('buyersQueueList');
+
+    function startLiveTimer() {
+      if (liveTimerInterval) return;
+      if (!liveStartTime) liveStartTime = new Date();
+      liveTimerInterval = setInterval(() => {
+        if (isLivePaused) return;
+        const diffMs = new Date() - liveStartTime;
+        const totalSecs = Math.floor(diffMs / 1000);
+        const hrs = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
+        const secs = String(totalSecs % 60).padStart(2, '0');
+        const timerEl = document.getElementById('streamTimer');
+        if (timerEl) timerEl.textContent = `${hrs}:${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function stopLiveTimer() {
+      if (liveTimerInterval) {
+        clearInterval(liveTimerInterval);
+        liveTimerInterval = null;
+      }
+    }
+
     function handleNewLiveComment(data) {
-      if (!data || !data.text) return;
+      if (isLivePaused || !data || !data.text) return;
       const text = data.text;
       const username = data.username.startsWith('@') ? data.username : '@' + data.username;
-      const time = new Date().toLocaleTimeString('pt-BR');
+      const time = data.time || new Date().toLocaleTimeString('pt-BR');
       const lower = text.toLowerCase();
 
-      const isIntent = lower.includes('quero') || lower.includes('pix') || lower.includes('comprar') || lower.includes('leva') || lower.includes('minha');
+      // Inicia timer na chegada do primeiro comentário
+      if (!liveStartTime) {
+        startLiveTimer();
+      }
+
+      // Detecta intenção de compra baseada nas palavras-chave
+      const isIntent = lower.includes('quero') || lower.includes('pix') || lower.includes('comprar') || lower.includes('leva') || lower.includes('reserva') || lower.includes('separa') || lower.includes('tamanho') || lower.includes('paguei');
 
       liveCommentsCount++;
+      uniqueViewersSet.add(username.toLowerCase());
+
       document.getElementById('statCommentsCount').textContent = liveCommentsCount.toLocaleString('pt-BR');
+      document.getElementById('statViewersCount').textContent = uniqueViewersSet.size.toLocaleString('pt-BR');
+
+      // Remove placeholder vazio se for o primeiro comentário
+      const feedEmptyState = document.getElementById('liveFeedEmptyState');
+      if (feedEmptyState) feedEmptyState.remove();
+
+      const commentEntry = {
+        id: "com_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        user: username,
+        comment: text,
+        time: time,
+        isIntent: isIntent
+      };
+      currentLiveComments.push(commentEntry);
 
       if (isIntent) {
         liveIntentsCount++;
         document.getElementById('statIntentsCount').textContent = liveIntentsCount.toLocaleString('pt-BR');
         playChime();
 
+        const buyersEmpty = document.getElementById('buyersEmptyState');
+        if (buyersEmpty) buyersEmpty.remove();
+
         // Adiciona à lista lateral de compradores se novo
-        if (buyersQueueList) {
-          const item = document.createElement('div');
-          item.className = "p-2.5 rounded-lg bg-surface-container flex items-center justify-between text-xs animate-in fade-in";
-          item.innerHTML = `
-            <div class="flex items-center gap-2">
-              <div class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center font-bold text-[10px]">@</div>
-              <span class="font-bold text-on-surface">${username}</span>
-            </div>
-            <span class="text-[10px] text-tertiary font-mono font-bold">Ao Vivo</span>
-          `;
-          buyersQueueList.prepend(item);
+        if (!currentBuyersMap.has(username.toLowerCase())) {
+          currentBuyersMap.set(username.toLowerCase(), { username, time, text });
+          if (buyersQueueList) {
+            const item = document.createElement('div');
+            item.className = "p-2.5 rounded-lg bg-surface-container flex items-center justify-between text-xs animate-in fade-in";
+            item.innerHTML = `
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-tertiary/20 text-tertiary flex items-center justify-center font-bold text-[10px]">@</div>
+                <span class="font-bold text-on-surface">${username}</span>
+              </div>
+              <span class="text-[10px] text-tertiary font-mono font-bold">${time}</span>
+            `;
+            buyersQueueList.prepend(item);
+          }
         }
       }
 
@@ -1125,9 +1097,129 @@
             <span class="text-xs text-on-surface-variant font-mono">${time}</span>
           </div>
           <p class="text-sm text-on-surface font-medium pl-10">${text}</p>
+          ${isIntent ? `
+          <div class="flex items-center justify-between pt-2 mt-1 border-t border-surface-container-high/40 pl-10">
+            <span class="px-2 py-0.5 rounded bg-tertiary-container/20 text-tertiary text-[10px] font-mono">#COMPRA</span>
+            <button class="copy-handle-btn px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-highest text-xs text-on-surface flex items-center gap-1" onclick="navigator.clipboard.writeText('${username}')">
+              <span class="material-symbols-outlined text-xs">content_copy</span>
+              <span>Copiar @</span>
+            </button>
+          </div>` : ''}
         `;
         feedContainer.prepend(card);
         if (autoScrollActive) feedContainer.scrollTop = 0;
+      }
+    }
+
+    // Botão de Pausar Captura
+    const btnPauseCapture = document.getElementById('btnPauseCapture');
+    const pauseLabel = document.getElementById('pauseLabel');
+    if (btnPauseCapture) {
+      btnPauseCapture.addEventListener('click', () => {
+        isLivePaused = !isLivePaused;
+        if (isLivePaused) {
+          if (pauseLabel) pauseLabel.textContent = "Retomar Captura";
+          btnPauseCapture.classList.add("bg-secondary-container/40");
+        } else {
+          if (pauseLabel) pauseLabel.textContent = "Pausar Captura";
+          btnPauseCapture.classList.remove("bg-secondary-container/40");
+        }
+      });
+    }
+
+    // Botão de Exportar CSV da Live Atual
+    const btnExportCSV = document.getElementById('btnExportCSV');
+    if (btnExportCSV) {
+      btnExportCSV.addEventListener('click', () => {
+        if (currentLiveComments.length === 0) {
+          alert("Nenhum comentário na live atual para exportar.");
+          return;
+        }
+        exportCSV(currentLiveComments, `live_atual_${Date.now()}.csv`);
+      });
+    }
+
+    // Botão Encerrar Live & Arquivar no Histórico (Zera tudo para a próxima live!)
+    const btnEndLive = document.getElementById('btnEndLive');
+    if (btnEndLive) {
+      btnEndLive.addEventListener('click', () => {
+        const total = currentLiveComments.length;
+        const buyersCount = currentBuyersMap.size;
+        const confirmMsg = total > 0
+          ? `Deseja encerrar e arquivar esta Live?\n\n• Comentários capturados: ${total}\n• Compradores identificados: ${buyersCount}\n\nTodos os dados serão salvos no Histórico e o painel será zerado para a próxima live.`
+          : `Deseja resetar o painel para iniciar uma nova Live?`;
+
+        if (!confirm(confirmMsg)) return;
+
+        if (total > 0) {
+          const savedLives = getSavedLives();
+          const timerVal = document.getElementById('streamTimer')?.textContent || "00:00:00";
+          const newLiveRecord = {
+            id: "live_" + Date.now(),
+            title: `Live de Vendas #${savedLives.length + 1}`,
+            date: new Date().toLocaleDateString('pt-BR'),
+            time: new Date().toLocaleTimeString('pt-BR'),
+            dur: timerVal,
+            comments: total,
+            intents: liveIntentsCount,
+            buyers: buyersCount,
+            buyersList: Array.from(currentBuyersMap.values()),
+            commentsList: [...currentLiveComments],
+            status: "concluida"
+          };
+
+          savedLives.unshift(newLiveRecord);
+          localStorage.setItem('ig_saved_lives', JSON.stringify(savedLives));
+
+          // Baixa CSV automaticamente como garantia
+          exportCSV(currentLiveComments, `relatorio_live_${newLiveRecord.date.replace(/\//g, '-')}.csv`);
+          renderHistoryTable();
+        }
+
+        resetLiveDashboard();
+        alert("Live encerrada com sucesso! Os dados foram guardados no Histórico e o painel foi zerado para a próxima live.");
+      });
+    }
+
+    function resetLiveDashboard() {
+      liveCommentsCount = 0;
+      liveIntentsCount = 0;
+      uniqueViewersSet.clear();
+      currentLiveComments = [];
+      currentBuyersMap.clear();
+      liveStartTime = null;
+      stopLiveTimer();
+      isLivePaused = false;
+
+      document.getElementById('statCommentsCount').textContent = "0";
+      document.getElementById('statViewersCount').textContent = "0";
+      document.getElementById('statIntentsCount').textContent = "0";
+      const timerEl = document.getElementById('streamTimer');
+      if (timerEl) timerEl.textContent = "00:00:00";
+      if (pauseLabel) pauseLabel.textContent = "Pausar Captura";
+
+      if (feedContainer) {
+        feedContainer.innerHTML = `
+          <div id="liveFeedEmptyState" class="flex flex-col items-center justify-center py-16 text-center text-on-surface-variant gap-3 bg-surface-container/30 rounded-2xl border border-dashed border-surface-container-high/60">
+            <div class="w-12 h-12 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-2xl animate-pulse">sensors</span>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-on-surface">Aguardando comentários da transmissão</h4>
+              <p class="text-xs text-outline mt-1 max-w-sm">Os comentários da sua Live aparecerão aqui em tempo real assim que a captura for ligada no Instagram.</p>
+            </div>
+          </div>
+        `;
+      }
+
+      if (buyersQueueList) {
+        buyersQueueList.innerHTML = `
+          <div id="buyersEmptyState" class="flex flex-col items-center justify-center py-12 text-center text-outline gap-2 bg-surface-container/20 rounded-xl border border-dashed border-surface-container-high/40">
+            <span class="material-symbols-outlined text-2xl text-surface-bright">shopping_bag</span>
+            <p class="text-xs text-on-surface-variant font-medium">Nenhum comprador ainda</p>
+            <p class="text-[10px] text-outline max-w-[200px]">Clientes que comentarem "QUERO", "PIX", etc. entrarão automaticamente nesta fila.</p>
+          </div>
+        `;
       }
     }
 
@@ -1150,14 +1242,14 @@
     // GATILHOS E PALAVRAS: LÓGICA & SIMULADOR DE FRASE
     // -----------------------------------------------------------------------
     const DEFAULT_TRIGGERS = [
-      { id: "1", word: "quero", category: "intent", active: true, count: 412 },
-      { id: "2", word: "pix", category: "intent", active: true, count: 289 },
-      { id: "3", word: "vou levar", category: "intent", active: true, count: 94 },
-      { id: "4", word: "tamanho m", category: "doubt", active: true, count: 174 },
-      { id: "5", word: "preço", category: "doubt", active: true, count: 153 },
-      { id: "6", word: "paguei", category: "paid", active: true, count: 124 },
-      { id: "7", word: "comprovante", category: "paid", active: true, count: 98 },
-      { id: "8", word: "golpe", category: "moderation", active: true, count: 2 }
+      { id: "1", word: "quero", category: "intent", active: true, count: 0 },
+      { id: "2", word: "pix", category: "intent", active: true, count: 0 },
+      { id: "3", word: "vou levar", category: "intent", active: true, count: 0 },
+      { id: "4", word: "tamanho m", category: "doubt", active: true, count: 0 },
+      { id: "5", word: "preço", category: "doubt", active: true, count: 0 },
+      { id: "6", word: "paguei", category: "paid", active: true, count: 0 },
+      { id: "7", word: "comprovante", category: "paid", active: true, count: 0 },
+      { id: "8", word: "golpe", category: "moderation", active: true, count: 0 }
     ];
 
     let currentTriggers = DEFAULT_TRIGGERS;
@@ -1192,23 +1284,43 @@
     }
 
     const inputTest = document.getElementById('inputTestPhrase');
+    const btnClearTest = document.getElementById('btnClearTest');
+    const testActionBadge = document.getElementById('testActionBadge');
+
     function runPhraseTest() {
-      const val = (inputTest ? inputTest.value : '').toLowerCase();
+      const val = (inputTest ? inputTest.value : '').toLowerCase().trim();
       const container = document.getElementById('detectedChipsContainer');
       if (!container) return;
       container.innerHTML = '';
 
-      currentTriggers.forEach(t => {
-        if (val.includes(t.word.toLowerCase())) {
-          const chip = document.createElement('span');
-          chip.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-tertiary-container/30 text-tertiary border border-tertiary/30";
-          chip.textContent = '#' + t.word;
-          container.appendChild(chip);
-        }
-      });
+      let found = 0;
+      if (val) {
+        currentTriggers.forEach(t => {
+          if (val.includes(t.word.toLowerCase())) {
+            found++;
+            const chip = document.createElement('span');
+            chip.className = "px-2.5 py-0.5 rounded-full text-xs font-bold bg-tertiary-container/30 text-tertiary border border-tertiary/30";
+            chip.textContent = '#' + t.word;
+            container.appendChild(chip);
+          }
+        });
+      }
+
+      if (found === 0) {
+        container.innerHTML = '<span class="text-xs text-on-surface-variant italic">Nenhum</span>';
+        if (testActionBadge) testActionBadge.classList.add('hidden');
+      } else {
+        if (testActionBadge) testActionBadge.classList.remove('hidden');
+      }
     }
 
     if (inputTest) inputTest.addEventListener('input', runPhraseTest);
+    if (btnClearTest) {
+      btnClearTest.addEventListener('click', () => {
+        if (inputTest) inputTest.value = '';
+        runPhraseTest();
+      });
+    }
     renderTriggers();
     runPhraseTest();
 
@@ -1234,62 +1346,157 @@
     // -----------------------------------------------------------------------
     // HISTÓRICO: RENDERIZAÇÃO DA TABELA DE LIVES PASSADAS
     // -----------------------------------------------------------------------
-    const SAMPLE_LIVES = [
-      { id: "1", title: "Coleção Primavera • Lançamento Exclusivo", date: "17/09/2026", dur: "01h 45m", comments: 4892, intents: 683, buyers: 412, status: "ao_vivo" },
-      { id: "2", title: "Mega Bazar Relâmpago • Descontos até 50%", date: "14/09/2026", dur: "02h 15m", comments: 7420, intents: 914, buyers: 580, status: "concluida" },
-      { id: "3", title: "Noite do Vestido de Festa • Especial", date: "10/09/2026", dur: "01h 30m", comments: 3910, intents: 520, buyers: 310, status: "concluida" },
-      { id: "4", title: "Acessórios & Bolsas em Couro", date: "05/09/2026", dur: "01h 20m", comments: 2840, intents: 390, buyers: 245, status: "concluida" }
-    ];
+    // -----------------------------------------------------------------------
+    // HISTÓRICO REAL DE LIVES GRAVADAS
+    // -----------------------------------------------------------------------
+    function getSavedLives() {
+      try {
+        const raw = localStorage.getItem('ig_saved_lives');
+        return raw ? JSON.parse(raw) : [];
+      } catch(e) {
+        return [];
+      }
+    }
 
     function renderHistoryTable() {
       const tbody = document.getElementById('livesTableBody');
       if (!tbody) return;
+      const lives = getSavedLives();
       tbody.innerHTML = '';
 
-      SAMPLE_LIVES.forEach(l => {
+      let totalComms = 0;
+      let totalInt = 0;
+      let allBuyersSet = new Set();
+
+      lives.forEach(l => {
+        totalComms += (l.comments || 0);
+        totalInt += (l.intents || 0);
+        if (l.buyersList && Array.isArray(l.buyersList)) {
+          l.buyersList.forEach(b => allBuyersSet.add(b.username?.toLowerCase()));
+        }
+      });
+
+      const elCountBadge = document.getElementById('liveCounterBadge');
+      if (elCountBadge) elCountBadge.textContent = `${lives.length} live(s)`;
+
+      const cardLives = document.querySelector('#view-historico .grid > div:nth-child(1) .text-2xl');
+      if (cardLives) cardLives.textContent = lives.length;
+
+      const cardComments = document.querySelector('#view-historico .grid > div:nth-child(2) .text-2xl');
+      if (cardComments) cardComments.textContent = totalComms.toLocaleString('pt-BR');
+
+      const cardIntents = document.querySelector('#view-historico .grid > div:nth-child(3) .text-2xl');
+      if (cardIntents) cardIntents.textContent = totalInt.toLocaleString('pt-BR');
+
+      const cardBuyers = document.querySelector('#view-historico .grid > div:nth-child(4) .text-2xl');
+      if (cardBuyers) cardBuyers.textContent = allBuyersSet.size.toLocaleString('pt-BR');
+
+      if (lives.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-12 text-center text-on-surface-variant text-xs">
+              <span class="material-symbols-outlined text-3xl text-surface-bright mb-2 block">folder_open</span>
+              Nenhuma live arquivada ainda.<br/>
+              Ao terminar uma transmissão, clique em <b>"Encerrar Live & Arquivar"</b> na aba Ao Vivo para guardar os dados aqui.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      lives.forEach((l) => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-surface-container/60 transition-colors";
         tr.innerHTML = `
           <td class="py-3 px-space-lg font-bold text-on-surface">${l.title}</td>
-          <td class="py-3 px-space-md text-xs text-on-surface-variant">${l.date} (${l.dur})</td>
-          <td class="py-3 px-space-md text-right font-mono font-bold">${l.comments.toLocaleString('pt-BR')}</td>
-          <td class="py-3 px-space-md text-right font-mono font-bold text-tertiary">${l.intents.toLocaleString('pt-BR')}</td>
-          <td class="py-3 px-space-md text-right font-mono">${l.buyers}</td>
+          <td class="py-3 px-space-md text-xs text-on-surface-variant">${l.date} (${l.dur || '00:00:00'})</td>
+          <td class="py-3 px-space-md text-right font-mono font-bold">${(l.comments || 0).toLocaleString('pt-BR')}</td>
+          <td class="py-3 px-space-md text-right font-mono font-bold text-tertiary">${(l.intents || 0).toLocaleString('pt-BR')}</td>
+          <td class="py-3 px-space-md text-right font-mono font-bold">${(l.buyers || 0)}</td>
           <td class="py-3 px-space-md text-center">
-            ${l.status === 'ao_vivo' 
-              ? '<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-[10px] font-bold">AO VIVO</span>' 
-              : '<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px]">CONCLUÍDA</span>'}
+            <span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-bold">CONCLUÍDA</span>
           </td>
-          <td class="py-3 px-space-lg text-right">
-            <button onclick="openLiveDetail('${l.id}')" class="px-2.5 py-1 rounded bg-surface-container-high text-xs text-primary hover:bg-surface-highest">Ver</button>
+          <td class="py-3 px-space-lg text-right flex items-center justify-end gap-1.5">
+            <button onclick="downloadPastLiveCsv('${l.id}')" class="px-2.5 py-1 rounded bg-surface-container-high text-xs text-primary hover:bg-surface-container-highest flex items-center gap-1" title="Baixar CSV desta live">
+              <span class="material-symbols-outlined text-xs">download</span><span>CSV</span>
+            </button>
+            <button onclick="openLiveDetail('${l.id}')" class="px-2.5 py-1 rounded bg-primary-container text-xs text-on-primary-container hover:opacity-90 font-bold">
+              Ver
+            </button>
+            <button onclick="deleteSavedLive('${l.id}')" class="p-1 rounded text-secondary hover:bg-secondary-container/30" title="Excluir do histórico">
+              <span class="material-symbols-outlined text-sm">delete</span>
+            </button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function openLiveDetail(id) {
-      const live = SAMPLE_LIVES.find(l => l.id === id);
+    window.openLiveDetail = function(id) {
+      const lives = getSavedLives();
+      const live = lives.find(l => l.id === id);
       if (!live) return;
+
       document.getElementById('modalLiveTitle').textContent = live.title;
-      document.getElementById('modalLiveMeta').textContent = `${live.date} • Duração: ${live.dur} • ${live.comments} comentários gravados`;
-      
+      document.getElementById('modalLiveMeta').textContent = `${live.date} às ${live.time || ''} • Duração: ${live.dur || ''} • ${live.comments} comentários gravados • ${live.buyers} compradores`;
+
       const list = document.getElementById('modalCommentsList');
-      list.innerHTML = `
-        <div class="p-3 rounded-lg bg-surface-container text-xs">
-          <span class="font-bold text-primary">@camila_silva92:</span> "QUERO O VESTIDO VERMELHO NO PIX!"
-        </div>
-        <div class="p-3 rounded-lg bg-surface-container text-xs">
-          <span class="font-bold text-primary">@anapaula_modas:</span> "PAGUEI O PIX!! Mandei o comprovante"
-        </div>
-      `;
+      if (!live.commentsList || live.commentsList.length === 0) {
+        list.innerHTML = `<div class="p-4 text-center text-xs text-on-surface-variant">Nenhum comentário detalhado registrado para esta live.</div>`;
+      } else {
+        list.innerHTML = live.commentsList.map(c => `
+          <div class="p-2.5 rounded-lg bg-surface-container text-xs flex flex-col gap-1 ${c.isIntent ? 'border border-tertiary/30' : ''}">
+            <div class="flex items-center justify-between">
+              <span class="font-bold ${c.isIntent ? 'text-tertiary' : 'text-primary'}">${c.user}</span>
+              <span class="text-[10px] text-on-surface-variant font-mono">${c.time}</span>
+            </div>
+            <p class="text-on-surface">${c.comment}</p>
+          </div>
+        `).join('');
+      }
       document.getElementById('liveDetailModal').classList.remove('hidden');
+    };
+
+    window.downloadPastLiveCsv = function(id) {
+      const lives = getSavedLives();
+      const live = lives.find(l => l.id === id);
+      if (!live || !live.commentsList) return alert("Dados de comentários não disponíveis.");
+      exportCSV(live.commentsList, `${live.title.replace(/\s+/g, '_')}_${live.date.replace(/\//g, '-')}.csv`);
+    };
+
+    window.deleteSavedLive = function(id) {
+      if (!confirm("Tem certeza que deseja excluir esta live do histórico?")) return;
+      const lives = getSavedLives().filter(l => l.id !== id);
+      localStorage.setItem('ig_saved_lives', JSON.stringify(lives));
+      renderHistoryTable();
+    };
+
+    function exportCSV(comments, filename) {
+      const header = ["Horario", "Usuario", "Comentario", "Intencao_Compra"];
+      const escape = (val) => '"' + String(val || "").replace(/"/g, '""') + '"';
+      const rows = [header.map(escape).join(",")];
+      comments.forEach(c => {
+        rows.push([
+          escape(c.time),
+          escape(c.user),
+          escape(c.comment),
+          escape(c.isIntent ? "SIM" : "NAO")
+        ].join(","));
+      });
+      const blob = new Blob(["\uFEFF" + rows.join("\r\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename || `live_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 5000);
     }
 
     renderHistoryTable();
 
     // -----------------------------------------------------------------------
-    // RELATÓRIOS: INICIALIZAÇÃO DOS GRÁFICOS CHART.JS
+    // RELATÓRIOS: INICIALIZAÇÃO DOS GRÁFICOS CHART.JS (ZERO MOCK DATA)
     // -----------------------------------------------------------------------
     function initCharts() {
       // 1. Linha do Tempo
@@ -1298,11 +1505,11 @@
         new Chart(ctxTimeline.getContext('2d'), {
           type: 'line',
           data: {
-            labels: ['19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30', '20:45'],
+            labels: ['Início', '+15m', '+30m', '+45m', '+1h', '+1h15', '+1h30', 'Fim'],
             datasets: [
               {
                 label: 'Comentários Totais',
-                data: [320, 580, 890, 1420, 1100, 780, 510, 292],
+                data: [0, 0, 0, 0, 0, 0, 0, 0],
                 borderColor: '#b4c5ff',
                 backgroundColor: 'rgba(180, 197, 255, 0.1)',
                 fill: true,
@@ -1310,7 +1517,7 @@
               },
               {
                 label: 'Pedidos QUERO/PIX',
-                data: [42, 85, 140, 248, 160, 95, 60, 33],
+                data: [0, 0, 0, 0, 0, 0, 0, 0],
                 borderColor: '#4edea3',
                 backgroundColor: 'rgba(78, 222, 163, 0.15)',
                 fill: true,
@@ -1324,13 +1531,13 @@
             plugins: { legend: { display: false } },
             scales: {
               x: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#c3c6d7' } },
-              y: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#c3c6d7' } }
+              y: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#c3c6d7' }, min: 0 }
             }
           }
         });
       }
 
-      // 2. Donut
+      // 2. Donut Categorias
       const ctxDonut = document.getElementById('chartCategories');
       if (ctxDonut) {
         new Chart(ctxDonut.getContext('2d'), {
@@ -1338,7 +1545,7 @@
           data: {
             labels: ['Intenção Compra', 'Dúvidas', 'Comprovantes', 'Outros'],
             datasets: [{
-              data: [48, 27, 15, 10],
+              data: [0, 0, 0, 0],
               backgroundColor: ['#4edea3', '#b4c5ff', '#ffb3ad', '#434655']
             }]
           },
@@ -1358,10 +1565,10 @@
           type: 'bar',
           indexAxis: 'y',
           data: {
-            labels: ['Vestido Vermelho M', 'Blazer Azul', 'Conjunto Linho', 'Bolsa Couro', 'Calça Alfaiataria'],
+            labels: ['Aguardando vendas...'],
             datasets: [{
-              data: [184, 142, 128, 96, 83],
-              backgroundColor: ['#2563eb', '#3b82f6', '#4edea3', '#60a5fa', '#8d90a0'],
+              data: [0],
+              backgroundColor: ['#2563eb'],
               borderRadius: 6
             }]
           },
@@ -1370,7 +1577,7 @@
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              x: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#c3c6d7' } },
+              x: { grid: { color: 'rgba(51,65,85,0.3)' }, ticks: { color: '#c3c6d7' }, min: 0 },
               y: { grid: { display: false }, ticks: { color: '#dae2fd' } }
             }
           }
@@ -1378,33 +1585,37 @@
       }
     }
 
-    // Botões de Exportação CSV
-    document.querySelectorAll('#btnExportCSV, #btnExportAllCsv, #btnExportReportSummaryCsv').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const rows = [
-          ["Usuario", "Horario", "Comentario", "Tipo"],
-          ["@camila_silva92", "19:45:12", "QUERO O VESTIDO VERMELHO NO PIX!", "INTENCAO"],
-          ["@anapaula_modas", "19:45:08", "PAGUEI O PIX!!", "COMPROVANTE"],
-          ["@beatriz_oliveira", "19:44:55", "Eu quero 2 blazers M", "INTENCAO"]
-        ];
-        const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-        const link = document.createElement("a");
-        link.setAttribute("href", encodeURI(csvContent));
-        link.setAttribute("download", "live_export.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // Exportar resumo da aba Relatórios
+    const btnExportReportSummary = document.getElementById('btnExportReportSummaryCsv');
+    if (btnExportReportSummary) {
+      btnExportReportSummary.addEventListener('click', () => {
+        if (currentLiveComments.length > 0) {
+          exportCSV(currentLiveComments, `relatorio_live_${Date.now()}.csv`);
+          return;
+        }
+        const lives = getSavedLives();
+        if (lives.length > 0) {
+          exportAllLivesCsv();
+          return;
+        }
+        alert("Nenhum dado capturado ainda para gerar relatório CSV.");
       });
-    });
+    }
 
-    // Copiar Todos os Compradores
+    // Copiar Todos os Compradores da Live Atual
     const btnCopyAll = document.getElementById('btnCopyAllBuyers');
     if (btnCopyAll) {
       btnCopyAll.addEventListener('click', () => {
-        const text = "@camila_silva92 @anapaula_modas @beatriz_oliveira";
+        if (!currentBuyersMap || currentBuyersMap.size === 0) {
+          alert("Nenhum comprador qualificado na fila ainda.");
+          return;
+        }
+        const text = Array.from(currentBuyersMap.values()).map(b => b.username).join(" ");
         navigator.clipboard.writeText(text).then(() => {
-          btnCopyAll.textContent = "Copiados!";
-          setTimeout(() => { btnCopyAll.innerHTML = '<span class="material-symbols-outlined text-xs">content_copy</span><span>Copiar Todos</span>'; }, 1800);
+          btnCopyAll.innerHTML = '<span class="material-symbols-outlined text-xs">check</span><span>Copiados!</span>';
+          setTimeout(() => { 
+            btnCopyAll.innerHTML = '<span class="material-symbols-outlined text-xs">content_copy</span><span>Copiar Todos</span>'; 
+          }, 2000);
         });
       });
     }
@@ -1539,23 +1750,35 @@
               return;
             }
 
-            // CAMADA 1: Trava de Hardware / Navegador Único
-            const registeredDevice = licData.device_fingerprint;
-            if (!registeredDevice || registeredDevice.trim() === "") {
-              // Primeiro acesso: registra este navegador na licença
-              try {
-                await fbDb.collection("licenses").doc(licenseKey).update({
-                  device_fingerprint: deviceId,
-                  last_login: firebase.firestore.FieldValue.serverTimestamp()
-                });
-              } catch (writeErr) {
-                console.warn("Aviso ao salvar device_fingerprint:", writeErr);
+            // CAMADA 1: Trava de Hardware / Navegador Único (Suporte autorizado para Arthur + Irmão)
+            let registeredDevices = [];
+            if (licData.device_fingerprints && Array.isArray(licData.device_fingerprints)) {
+              registeredDevices = licData.device_fingerprints;
+            } else if (licData.device_fingerprint) {
+              registeredDevices = licData.device_fingerprint.split(",").map(s => s.trim()).filter(Boolean);
+            }
+
+            const maxDevices = parseInt(licData.max_devices, 10) || 2;
+
+            if (!registeredDevices.includes(deviceId)) {
+              if (registeredDevices.length < maxDevices) {
+                // Primeiro acesso do operador (Arthur ou Irmão): registra este dispositivo
+                registeredDevices.push(deviceId);
+                try {
+                  await fbDb.collection("licenses").doc(licenseKey).update({
+                    device_fingerprint: registeredDevices.join(","),
+                    device_fingerprints: registeredDevices,
+                    last_login: firebase.firestore.FieldValue.serverTimestamp()
+                  });
+                } catch (writeErr) {
+                  console.warn("Aviso ao salvar device_fingerprint:", writeErr);
+                }
+              } else {
+                // Já atingiu os 2 operadores cadastrados
+                showLoginError(`🚫 Limite de operadores atingido (${registeredDevices.length}/${maxDevices}). Esta conta está configurada para acesso compartilhado exclusivo entre 2 computadores autorizados.`);
+                performLogout();
+                return;
               }
-            } else if (registeredDevice !== deviceId) {
-              // Já registrado em outro navegador: bloqueia!
-              showLoginError(`🚫 Chave em uso em outro navegador (${registeredDevice.substring(0, 10)}...). Cada licença é restrita a 1 dispositivo. Solicite a transferência.`);
-              performLogout();
-              return;
             }
 
             // CAMADA 4: ESCUTA EM TEMPO REAL (KILLSWITCH / REVOGAÇÃO INSTANTÂNEA)
@@ -1672,6 +1895,15 @@
         if (request && request.type === "NEW_COMMENT" && request.comment) {
           handleNewLiveComment(request.comment);
           sendResponse({ ok: true });
+        }
+      });
+    }
+
+    if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
+      chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request && (request.type === "NEW_COMMENT" || request.type === "DISPATCH_LIVE_COMMENT_TO_DASHBOARD") && request.comment) {
+          handleNewLiveComment(request.comment);
+          if (sendResponse) sendResponse({ ok: true });
         }
       });
     }

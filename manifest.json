@@ -20,7 +20,9 @@
     "*://instagram.com/*",
     "*://*.vercel.app/*",
     "http://localhost/*",
+    "http://localhost:*/*",
     "http://127.0.0.1/*",
+    "http://127.0.0.1:*/*",
     "file:///*"
   ],
   "externally_connectable": {
@@ -48,7 +50,9 @@
         "*://*.instagram.com/*",
         "*://instagram.com/*",
         "http://localhost/*",
+        "http://localhost:*/*",
         "http://127.0.0.1/*",
+        "http://127.0.0.1:*/*",
         "file:///*"
       ],
       "js": ["interceptor.js"],
@@ -59,8 +63,11 @@
       "matches": [
         "*://*.instagram.com/*",
         "*://instagram.com/*",
+        "*://*.vercel.app/*",
         "http://localhost/*",
+        "http://localhost:*/*",
         "http://127.0.0.1/*",
+        "http://127.0.0.1:*/*",
         "file:///*"
       ],
       "js": ["db.js", "content.js"],
